@@ -39,7 +39,21 @@ connectDB();
 
 // Test route
 app.get("/", (req, res) => {
-  res.status(200).send("Welcome to the API");
+  res.status(200).send(`
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>First Deployment</title>
+</head>
+<body style="background-color: lightblue; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <h1 style="color: navy; font-family: sans-serif; font-size: 3em; text-align: center; border: 2px solid navy; padding: 20px; background-color: white;">
+        This is my first deployment
+    </h1>
+
+</body>
+</html>
+`);
 });
 
 // Route middlewares
