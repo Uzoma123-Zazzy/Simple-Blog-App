@@ -50,6 +50,8 @@ app.use("/api/post", postRoute);    // Routes for blog post creation and retriev
 
 
 // Start the server
-app.listen(PORT, () => {
-  console.log("Server running on the PORT");
-});
+//app.listen(PORT, () => {
+ // console.log("Server running on the PORT");
+//});
+
+module.exports = app
