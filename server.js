@@ -7,6 +7,7 @@ const userRoute = require('./Routers/userRouter.js')
 const postRoute = require("./Routers/postRouter.js")
 const cookieParser =  require("cookie-parser")
 const PORT = process.env.PORT || 5173
+const path = require('path');
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -20,7 +21,7 @@ app.use(
   })
 );
 
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 app.use(cookieParser());
@@ -37,23 +38,16 @@ app.use((err, req, res, next) => {
 
 connectDB();
 
-// Test route
-app.get("/", (req, res) => {
-  res.status(200).send(`
-    <!DOCTYPE html>
-<html>
-<head>
-    <title>First Deployment</title>
-</head>
-<body style="background-color: lightblue; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+app.get('/auth', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'auth.html'));
+});
 
-    <h1 style="color: navy; font-family: sans-serif; font-size: 3em; text-align: center; border: 2px solid navy; padding: 20px; background-color: white;">
-        This is my first deployment
-    </h1>
+app.get('/signin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'signin.html'));
+});
 
-</body>
-</html>
-`);
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
 
 // Route middlewares
