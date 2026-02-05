@@ -38,7 +38,7 @@ app.use((err, req, res, next) => {
 
 connectDB();
 
-app.get('/auth', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'auth.html'));
 });
 
