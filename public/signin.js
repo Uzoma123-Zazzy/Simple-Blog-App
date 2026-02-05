@@ -4,7 +4,7 @@ async function handleSignIn() {
     const msg = document.getElementById('loginMsg');
 
     try {
-        const res = await fetch('https://your-vercel-link.vercel.app/api/auth/signin', {
+        const res = await fetch('https://simple-blog-app-nu.vercel.app/api/auth/signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
