@@ -31,19 +31,17 @@ const registerUser = async (req, res, next) => {
       if (existingUser) {
           return next(errorHandler(409, "User already exists with this email"));
         }
-  }catch(error){
-        next(error);      
-  }
-  const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = new User({ username, email, password: hashedPassword });
-  try {
-    await newUser.save();
-    res
+      const newUser = new User({ username, email, password: hashedPassword });
+      await newUser.save();
+      res
       .status(201)
       .json({ message: "User registered successfully", result: newUser });
-  } catch (error) {
-    next(error);
+  
+  }
+  catch(error){
+        next(error);      
   }
 };
 
