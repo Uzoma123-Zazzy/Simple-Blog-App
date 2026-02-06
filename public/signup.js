@@ -34,16 +34,16 @@ async function handleSignUp() {
                 window.location.href = "/signin";
             }, 2000);
         }
-        if(response.status === 409){
-            msg.innerText = "Email already exists";
+        else {
+            if(response.status === 409){
+            msg.innerText = "Email already registered";
             msg.style.color = "red";
 
-        }
-        else {
-            
+        } else{
             msg.innerText = data.message || "Registration failed. Try again.";
             msg.style.color = "red";
-        }
+        }}
+            
     } catch (error) {
         msg.innerText = "Cannot connect to server. Please check your connection.";
         msg.style.color = "red";
