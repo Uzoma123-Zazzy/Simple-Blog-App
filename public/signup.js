@@ -27,25 +27,15 @@ async function handleSignUp() {
         const data = await response.json();
 
         if (response.ok) {
-            msg.innerText = "Registration Successful! Moving to Login...";
-            msg.style.color = "green";
-            
-            setTimeout(() => {
-                window.location.href = "/signin";
-            }, 2000);
-        }
-        else {
-            if(response.status === 409){
-            msg.innerText = "Email already registered";
-            msg.style.color = "red";
-
-        } else{
-            msg.innerText = data.message || "Registration failed. Try again.";
-            msg.style.color = "red";
-        }}
-            
-    } catch (error) {
-        msg.innerText = "Cannot connect to server. Please check your connection.";
+        msg.innerText = "Registration Successful!";
+        msg.style.color = "green";
+        setTimeout(() => { window.location.href = "/signin"; }, 2000);
+        } else {
+        msg.innerText = data.message || "Registration failed";
         msg.style.color = "red";
     }
+        } catch (error) {
+        msg.innerText = "Error: Could not reach the server.";
+        msg.style.color = "red";
+}
 }
