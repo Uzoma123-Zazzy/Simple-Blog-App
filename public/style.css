@@ -77,3 +77,10 @@ button:hover { background-color: #0056b3; }
 
 .error-msg { color: red; font-size: 14px; text-align: center; margin-top: 10px; }
 .success-msg { color: green; font-size: 14px; text-align: center; margin-top: 10px; }
+
+.message-area {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 20px; /* Prevents the box from jumping when text appears */
+}

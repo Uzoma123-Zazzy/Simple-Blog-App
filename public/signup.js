@@ -4,21 +4,42 @@ async function handleSignUp() {
     const password = document.getElementById('password').value;
     const msg = document.getElementById('responseMsg');
 
+    msg.innerText = "";
+    msg.className = "message-area"; 
+
+    if (!username || !email || !password) {
+        msg.innerText = "All fields are required!";
+        msg.style.color = "red";
+        return;
+    }
+
+    const API_URL = "https://simple-blog-app-nu.vercel.app/api/auth/register-user";
+
     try {
-        const res = await fetch('https://simple-blog-app-nu.vercel.app/api/auth/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ username, email, password })
         });
-        const data = await res.json();
 
-        if (res.ok) {
-            msg.innerHTML = `<p class="success-msg">Success! Redirecting to login...</p>`;
-            setTimeout(() => { window.location.href = "/auth.html"; }, 2000);
+        const data = await response.json();
+
+        if (response.ok) {
+            msg.innerText = "Registration Successful! Moving to Login...";
+            msg.style.color = "green";
+            
+            setTimeout(() => {
+                window.location.href = "/signin";
+            }, 2000);
         } else {
-            msg.innerHTML = `<p class="error-msg">${data.message}</p>`;
+            
+            msg.innerText = data.message || "Registration failed. Try again.";
+            msg.style.color = "red";
         }
-    } catch (err) {
-        msg.innerHTML = `<p class="error-msg">Server error. Try again.</p>`;
+    } catch (error) {
+        msg.innerText = "Cannot connect to server. Please check your connection.";
+        msg.style.color = "red";
     }
 }
