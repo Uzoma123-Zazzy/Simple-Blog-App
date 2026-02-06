@@ -26,16 +26,6 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(statusCode).json({
-    success: false,
-    statusCode,
-    message,
-  });
-});
-
 connectDB();
 
 app.get('/', (req, res) => {
@@ -55,7 +45,14 @@ app.use("/api/auth", authRoute);    // Routes for registration, login, Google au
 app.use("/api/user", userRoute);    // Routes for user update, delete
 app.use("/api/post", postRoute);    // Routes for blog post creation and retrieval
 
-
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(statusCode).json({
+    success: false,
+    message,
+  });
+});
 
 // Start the server
 //app.listen(PORT, () => {
