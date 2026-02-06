@@ -4,8 +4,8 @@ async function handleSignUp() {
     const password = document.getElementById('password').value;
     const msg = document.getElementById('responseMsg');
 
-    msg.innerText = "";
-    msg.className = "message-area"; 
+    msg.innerText = "Processing...";
+    msg.style.color = "blue";
 
     if (!username || !email || !password) {
         msg.innerText = "All fields are required!";
@@ -27,15 +27,19 @@ async function handleSignUp() {
         const data = await response.json();
 
         if (response.ok) {
-        msg.innerText = "Registration Successful!";
-        msg.style.color = "green";
-        setTimeout(() => { window.location.href = "/signin"; }, 2000);
+            msg.innerText = "Registration Successful! Redirecting...";
+            msg.style.color = "green";
+            
+            setTimeout(() => {
+                window.location.href = "/signin";
+            }, 2000);
         } else {
-        msg.innerText = data.message || "Registration failed";
-        msg.style.color = "red";
-    }
-        } catch (error) {
+            msg.innerText = data.message || "Registration failed";
+            msg.style.color = "red";
+        }
+
+    } catch (error) {
         msg.innerText = "Error: Could not reach the server.";
         msg.style.color = "red";
-}
+    }
 }
