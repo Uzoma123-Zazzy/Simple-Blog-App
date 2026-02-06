@@ -3,25 +3,38 @@ async function handleSignIn() {
     const password = document.getElementById('loginPassword').value;
     const msg = document.getElementById('loginMsg');
 
+    msg.innerText = ""; 
+    const API_URL = "https://simple-blog-app-nu.vercel.app/api/auth/signin-user";
+
     try {
-        const res = await fetch('https://simple-blog-app-nu.vercel.app/api/auth/signin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ email, password })
         });
-        const data = await res.json();
 
-        if (res.ok) {
-            // Store the token and user details for later use
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('currentUser', JSON.stringify(data.result));
+        const data = await response.json();
+
+        if (response.ok) {
             
-            msg.innerHTML = `<p class="success-msg">Welcome back!</p>`;
-            window.location.href = "/index.html"; // Go to your home page
+            localStorage.setItem('token', data.token);
+            
+            localStorage.setItem('user', JSON.stringify(data.result));
+
+            msg.innerText = "Login Successful! Redirecting...";
+            msg.style.color = "green";
+
+            setTimeout(() => {
+                window.location.href = "/"; 
+            }, 1500);
         } else {
-            msg.innerHTML = `<p class="error-msg">${data.message}</p>`;
+            msg.innerText = data.message || "Login failed";
+            msg.style.color = "red";
         }
-    } catch (err) {
-        msg.innerHTML = `<p class="error-msg">Connection failed.</p>`;
+    } catch (error) {
+        msg.innerText = "Error connecting to server.";
+        msg.style.color = "red";
     }
 }
