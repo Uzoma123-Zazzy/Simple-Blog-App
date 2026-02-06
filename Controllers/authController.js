@@ -10,7 +10,6 @@ dotenv.config();
 // Register new user
 const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body;
-
   // Validate that all fields are provided and email is valid
   if (
     !username ||
@@ -27,12 +26,17 @@ const registerUser = async (req, res, next) => {
     return next(errorHandler(400, "Invalid email format")); // Validate email format
   }
 
-  // Hash password 
+  try {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+          return next(errorHandler(409, "User already exists with this email"));
+        }
+  }catch(error){
+        next(error);      
+  }
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Create new user and save to database
   const newUser = new User({ username, email, password: hashedPassword });
-
   try {
     await newUser.save();
     res

@@ -33,7 +33,13 @@ async function handleSignUp() {
             setTimeout(() => {
                 window.location.href = "/signin";
             }, 2000);
-        } else {
+        }
+        if(response.status === 409){
+            msg.innerText = "Email already exists";
+            msg.style.color = "red";
+
+        }
+        else {
             
             msg.innerText = data.message || "Registration failed. Try again.";
             msg.style.color = "red";
