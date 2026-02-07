@@ -22,6 +22,7 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'views')));
 app.use(express.json());
 
 app.use(cookieParser());
@@ -44,6 +45,9 @@ app.get('/profile', (req, res) => {
 });
 app.get('/create-post', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'create-post.html'));
+});
+app.get('/post', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'post.html'));
 });
 
 // Route middlewares
