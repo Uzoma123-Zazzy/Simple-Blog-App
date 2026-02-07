@@ -3,6 +3,7 @@ async function handleSignIn() {
     const password = document.getElementById('password').value;
     const msg = document.getElementById('responseMsg');
 
+    // Reset message state
     msg.innerText = "Authenticating...";
     msg.style.color = "blue";
 
@@ -21,20 +22,21 @@ async function handleSignIn() {
             body: JSON.stringify({ email, password })
         });
 
-        let data = {};
-        try {
-            data = await response.json();
-        } catch (_) {}
+        const data = await response.json();
 
         if (response.ok) {
+            // Store the JWT token
             localStorage.setItem("token", data.token);
+            
+            // Store the user object from 'result' for the profile page
             localStorage.setItem("user", JSON.stringify(data.result));
 
             msg.innerText = "Login Successful! Redirecting...";
             msg.style.color = "green";
 
+            // Redirect to the views folder
             setTimeout(() => {
-                window.location.href = "/index.html";
+                window.location.href = "/views/index.html"; 
             }, 1500);
         } else {
             msg.innerText = data.message || "Login failed";
@@ -44,5 +46,6 @@ async function handleSignIn() {
     } catch (error) {
         msg.innerText = "Network error: Could not reach the server.";
         msg.style.color = "red";
+        console.error("Sign-in error:", error);
     }
 }

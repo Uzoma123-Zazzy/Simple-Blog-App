@@ -39,6 +39,12 @@ app.get('/signin', (req, res) => {
 app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
+});
+app.get('/create-post', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'create-post.html'));
+});
 
 // Route middlewares
 app.use("/api/auth", authRoute);    // Routes for registration, login, Google auth
