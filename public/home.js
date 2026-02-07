@@ -19,7 +19,7 @@ async function fetchPosts() {
     }
 
     try {
-        const response = await fetch('https://simple-blog-app-nu.vercel.app/api/post/getall');
+        const response = await fetch('https://simple-blog-app-nu.vercel.app/api/post/getallposts');
         const data = await response.json();
 
         if (!response.ok) throw new Error(data.message || "Failed to fetch posts");
