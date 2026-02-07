@@ -11,6 +11,7 @@ const path = require('path');
 
 dotenv.config(); // Load environment variables from .env file
 
+
 const app = express();
 
 // Middleware to handle cross-origin requests
