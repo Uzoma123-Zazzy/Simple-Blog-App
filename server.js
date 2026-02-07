@@ -21,40 +21,11 @@ app.use(
   })
 );
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'auth.html'));
-});
-
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views')));
 app.use(express.json());
-
 app.use(cookieParser());
 
 connectDB();
 
-app.get('/signin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'signin.html'));
-});
-
-app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
-});
-
-app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
-});
-
-app.get('/profile', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
-});
-app.get('/create-post', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'create-post.html'));
-});
-app.get('/post', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'post.html'));
-});
 
 // Route middlewares
 app.use("/api/auth", authRoute);    // Routes for registration, login, Google auth
