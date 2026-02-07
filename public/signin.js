@@ -34,7 +34,7 @@ async function handleSignIn() {
             msg.style.color = "green";
 
             setTimeout(() => {
-                window.location.href = "/";
+                window.location.href = "/index.html";
             }, 1500);
         } else {
             msg.innerText = data.message || "Login failed";
