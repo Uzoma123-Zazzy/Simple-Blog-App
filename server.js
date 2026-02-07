@@ -27,6 +27,9 @@ app.use(cookieParser());
 
 connectDB();
 
+app.get('/', (req, res) => {
+    res.send(`<h1>Welcome to the API</h1>`)
+});
 
 // Route middlewares
 app.use("/api/auth", authRoute);    // Routes for registration, login, Google auth
