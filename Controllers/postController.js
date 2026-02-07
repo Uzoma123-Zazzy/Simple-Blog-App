@@ -3,10 +3,6 @@ const {errorHandler} = require('../Utils/Error.js')
 
 const createPost = async (req, res, next) => {
   
-  if (!req.user.isAdmin) {
-    return next(errorHandler(403, "You are not allowed to create a post"));
-  }
-  
   if (!req.body.title || !req.body.content) {
     return next(errorHandler(400, "All fields are required"));
   }
@@ -60,6 +56,7 @@ const getAllPosts = async (req, res, next) => {
 };
 
 const getPostById = async (req, res, next) => {
+  
   try {
     const post = await Post.findById(req.params.id);
 

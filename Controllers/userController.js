@@ -45,47 +45,39 @@ const updateUser = async (req, res, next) => {
   }
 
   try {
-    // Update the user details in the database
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
-          username: req.body.username, // Update username if provided
-          email: req.body.email, // Update email if provided
-          password: req.body.password, // Update password if provided
-          profilePicture: req.body.profilePicture, // Update profile picture if provided
+          username: req.body.username, 
+          email: req.body.email, 
+          password: req.body.password, 
+          profilePicture: req.body.profilePicture, 
         },
       },
-      { new: true } // Ensure the updated user document is returned
+      { new: true } 
     );
 
-    // Exclude the password field from the response
     const { password: _, ...user } = updatedUser._doc;
 
-    // Send success response with updated user details (excluding password)
     res.status(200).json({
-      message: "User updated successfully", // Success message
-      result: user, // Updated user details (without password)
+      message: "User updated successfully", 
+      result: user, 
     });
   } catch (error) {
-    // Handle any errors during the update operation
     next(error);
   }
 };
 
-// Controller to handle deleting a user profile
 const deleteUser = async (req, res, next) => {
-  // Check if the user is trying to delete their own account
   if (req.params.id !== req.user.id) {
-    return next(errorHandler(403, "You can only delete your account!")); // Send a 403 Forbidden error if not
+    return next(errorHandler(403, "You can only delete your account!")); 
   }
 
   try {
-    // Delete the user from the database by ID
     await User.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "User deleted successfully" }); // Send success response
+    res.status(200).json({ message: "User deleted successfully" }); 
   } catch (error) {
-    // Handle any errors during the delete operation
     next(error);
   }
 };

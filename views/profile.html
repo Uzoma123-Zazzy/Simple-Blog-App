@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Blog-App</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <button onclick="window.location.href='/'">← Home</button>
+        <h1>User Profile</h1>
+        <button id="logoutBtn" onclick="handleLogout()">Logout</button>
+    </header>
+
+    <main class="profile-container">
+        <div class="profile-card">
+            <div class="profile-image-section">
+                <img id="profilePic" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" alt="Profile Picture">
+            </div>
+
+            <div class="profile-details">
+                <div class="info-group">
+                    <label>Username</label>
+                    <input type="text" id="profUsername" readonly>
+                </div>
+
+                <div class="info-group">
+                    <label>Email Address</label>
+                    <input type="email" id="profEmail" readonly>
+                </div>
+
+                <div class="info-group">
+                    <label>Account Status</label>
+                    <input type="text" id="profStatus" readonly>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/profile.js"></script>
+</body>
+</html>

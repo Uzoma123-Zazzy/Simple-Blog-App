@@ -11,6 +11,6 @@ router.get("/getallposts", middleware, getAllPosts);
 
 router.get("/getpost/:id", middleware, getPostById);
 
-router.delete("/:id",middleware ,  deletePost)
+router.delete("/delete/:id",middleware ,  deletePost)
 
 module.exports = router
