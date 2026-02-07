@@ -36,7 +36,7 @@ async function handleSignIn() {
 
             // Redirect to the views folder
             setTimeout(() => {
-                window.location.href = "/index.html"; 
+                window.location.href = "/home"; 
             }, 1500);
         } else {
             msg.innerText = data.message || "Login failed";
