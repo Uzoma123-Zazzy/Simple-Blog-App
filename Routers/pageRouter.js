@@ -24,13 +24,16 @@ router.get('/posts', middleware, async (req, res, next) => {
   }
 })
 
-router.get("/signin", (req, res) => {
-  res.render("signin");
-});
+// GET /signin
+router.get('/signin', (req, res) => {
+  res.render('signin', { error: null, email: '' })
+})
 
-router.get("/signup", (req, res) => {
-  res.render("signup");
-});
+// GET /signup
+router.get('/signup', (req, res) => {
+  res.render('signup', { error: null, username: '', email: '' })
+})
+
 
 // Protected pages
 router.get("/create-post", middleware, (req, res) => {
