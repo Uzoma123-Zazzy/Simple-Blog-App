@@ -1,13 +1,12 @@
 const User = require('../Models/userModel.js')
-const { errorHandler } = require('../Utils/Error.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
 const validator = require('validator')
+const { errorHandler } = require('../Utils/Error.js')
 
 dotenv.config()
 
-// Helper to generate JWT
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, isAdmin: user.isAdmin, username: user.username },
@@ -16,22 +15,22 @@ const generateToken = (user) => {
   )
 }
 
-// ------------------ REGISTER USER ------------------
+// ---------------- SIGN UP ----------------
 const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body
 
-  if (!username || !email || !password) {
-    return next(errorHandler(400, "All fields are required"))
-  }
-
-  if (!validator.isEmail(email)) {
-    return next(errorHandler(400, "Invalid email format"))
-  }
-
   try {
+    if (!username || !email || !password) {
+      return res.render('signup', { error: "All fields are required", username, email })
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.render('signup', { error: "Invalid email format", username, email })
+    }
+
     const existingUser = await User.findOne({ email })
     if (existingUser) {
-      return next(errorHandler(409, "User already exists with this email"))
+      return res.render('signup', { error: "User already exists", username, email })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -39,55 +38,54 @@ const registerUser = async (req, res, next) => {
     await newUser.save()
 
     const token = generateToken(newUser)
-
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24*60*60*1000
     })
 
-    // Redirect to home feed after registration
-    res.redirect('/Posts')
-  } catch (error) {
-    next(error)
+    res.redirect('Posts')
+  } catch (err) {
+    next(err)
   }
 }
 
-// ------------------ SIGN IN USER ------------------
+// ---------------- SIGN IN ----------------
 const signinUser = async (req, res, next) => {
   const { email, password } = req.body
 
-  if (!email || !password) {
-    return next(errorHandler(400, "All fields are required"))
-  }
-
   try {
-    const userDetail = await User.findOne({ email }).select("+password")
-    if (!userDetail) {
-      return next(errorHandler(404, "User not found"))
+    if (!email || !password) {
+      return res.render('signin', { error: "All fields are required", email })
     }
 
-    const isPasswordValid = await bcrypt.compare(password, userDetail.password)
-    if (!isPasswordValid) {
-      return next(errorHandler(401, "Invalid credentials"))
+    const user = await User.findOne({ email }).select("+password")
+    if (!user) {
+      return res.render('signin', { error: "User not found", email })
     }
 
-    const token = generateToken(userDetail)
+    const isValid = await bcrypt.compare(password, user.password)
+    if (!isValid) {
+      return res.render('signin', { error: "Invalid credentials", email })
+    }
 
+    const token = generateToken(user)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24*60*60*1000
     })
 
-    // Redirect to home feed after successful login
-    res.redirect('/Posts')
-  } catch (error) {
-    next(error)
+    res.redirect('Posts')
+  } catch (err) {
+    next(err)
   }
 }
+
+module.exports = { registerUser, signinUser }
+
 
 // ------------------ GOOGLE AUTH ------------------
 const googleAuth = async (req, res, next) => {

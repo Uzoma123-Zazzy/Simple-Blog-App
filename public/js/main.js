@@ -1,4 +1,4 @@
-async function handleSignup() {
+/*async function handleSignup() {
   const username = document.getElementById("username").value.trim()
   const email = document.getElementById("email").value.trim()
   const password = document.getElementById("password").value.trim()
@@ -33,10 +33,10 @@ async function handleSignup() {
     msg.innerText = "Something went wrong"
     msg.style.color = "red"
   }
-}
+}*/
 
 
-async function handleSignin() {
+/*async function handleSignin() {
   const email = document.getElementById("email").value.trim()
   const password = document.getElementById("password").value.trim()
   const msg = document.getElementById("msg")
@@ -70,7 +70,7 @@ async function handleSignin() {
     msg.innerText = "Something went wrong"
     msg.style.color = "red"
   }
-}
+}*/
 
 // Navigate to profile page
 const profileBtn = document.getElementById('profileBtn')
