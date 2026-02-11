@@ -74,42 +74,10 @@ body {
   align-items: center;
 }
 
-.auth-container {
-  background: white;
-  padding: 40px 30px;
-  width: 90%;
-  max-width: 350px;
-  border-radius: 10px;
-  text-align: center;
-}
 
-.auth-container h2 {
-  margin-bottom: 20px;
-  color: #1e3c72;
-}
 
-.auth-container input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
 
-.auth-container button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background: #1e3c72;
-  color: white;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-}
 
-.auth-container button:hover {
-  opacity: 0.9;
-}
 
 #msg {
   margin-top: 15px;
