@@ -48,7 +48,7 @@ async function handleSignin() {
   }
 
   try {
-    const res = await fetch("https://simple-blog-app-nu.vercel.app/api/auth/sign-in-user", {
+    const res = await fetch("https://simple-blog-app-nu.vercel.app/api/auth/signin-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -73,14 +73,20 @@ async function handleSignin() {
 }
 
 // Navigate to profile page
-document.getElementById("profileBtn").addEventListener("click", () => {
-    window.location.href = "/profile";
-});
+const profileBtn = document.getElementById('profileBtn')
+if (profileBtn) {
+  profileBtn.addEventListener('click', () => {
+    window.location.href = '/profile'
+  })
+}
 
-// Navigate to create post page
-document.getElementById("createPostBtn").addEventListener("click", () => {
-    window.location.href = "/createpost";
-});
+const createPostBtn = document.getElementById('createPostBtn')
+if (createPostBtn) {
+  createPostBtn.addEventListener('click', () => {
+    window.location.href = '/create-post'
+  })
+}
+
 
 //del
 const deleteButtons = document.querySelectorAll(".delete-btn");
