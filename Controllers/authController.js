@@ -48,7 +48,7 @@ const registerUser = async (req, res, next) => {
     })
 
     // Redirect to home feed after registration
-    res.redirect('/home')
+    res.redirect('/Posts')
   } catch (error) {
     next(error)
   }
@@ -83,7 +83,7 @@ const signinUser = async (req, res, next) => {
     })
 
     // Redirect to home feed after successful login
-    res.redirect('/home')
+    res.redirect('/Posts')
   } catch (error) {
     next(error)
   }
@@ -125,7 +125,7 @@ const googleAuth = async (req, res, next) => {
     })
 
     // Redirect to home feed
-    res.redirect('/home')
+    res.redirect('/Posts')
   } catch (error) {
     next(error)
   }

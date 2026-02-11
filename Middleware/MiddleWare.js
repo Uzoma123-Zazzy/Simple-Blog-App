@@ -4,7 +4,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const authMiddleware = (req, res, next) => {
+const middleware = (req, res, next) => {
   // Get token from cookies
   const token = req.cookies?.token
 
@@ -24,4 +24,4 @@ const authMiddleware = (req, res, next) => {
   })
 }
 
-module.exports = { authMiddleware }
+module.exports = { middleware }
