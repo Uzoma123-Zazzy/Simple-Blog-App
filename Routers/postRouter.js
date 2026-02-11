@@ -3,7 +3,7 @@ const {middleware} = require('../Middleware/MiddleWare.js')
 const {createPost, deletePost, getAllPosts, getPostById} = require('../Controllers/postController.js')
 
 
-const router = express.Router(); // Initialize a new router
+const router = express.Router(); 
 
 router.post("/createpost", middleware, createPost);
 
