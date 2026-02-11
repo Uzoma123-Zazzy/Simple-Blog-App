@@ -7,6 +7,16 @@ const validator = require('validator')
 
 dotenv.config()
 
+// Helper to generate JWT
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user._id, isAdmin: user.isAdmin, username: user.username },
+    process.env.JWT_SECRET_KEY,
+    { expiresIn: '1d' }
+  )
+}
+
+// ------------------ REGISTER USER ------------------
 const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body
 
@@ -28,11 +38,7 @@ const registerUser = async (req, res, next) => {
     const newUser = new User({ username, email, password: hashedPassword })
     await newUser.save()
 
-    const token = jwt.sign(
-      { id: newUser._id, isAdmin: newUser.isAdmin },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
-    )
+    const token = generateToken(newUser)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -41,17 +47,14 @@ const registerUser = async (req, res, next) => {
       maxAge: 24 * 60 * 60 * 1000
     })
 
-    const { password: _, ...user } = newUser._doc
-
-    res.status(201).json({
-      message: "User registered successfully",
-      result: user
-    })
+    // Redirect to home feed after registration
+    res.redirect('/home')
   } catch (error) {
     next(error)
   }
 }
 
+// ------------------ SIGN IN USER ------------------
 const signinUser = async (req, res, next) => {
   const { email, password } = req.body
 
@@ -70,11 +73,7 @@ const signinUser = async (req, res, next) => {
       return next(errorHandler(401, "Invalid credentials"))
     }
 
-    const token = jwt.sign(
-      { id: userDetail._id, isAdmin: userDetail.isAdmin },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
-    )
+    const token = generateToken(userDetail)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -83,17 +82,14 @@ const signinUser = async (req, res, next) => {
       maxAge: 24 * 60 * 60 * 1000
     })
 
-    const { password: _, ...user } = userDetail._doc
-
-    res.status(200).json({
-      message: "User logged in successfully",
-      result: user
-    })
+    // Redirect to home feed after successful login
+    res.redirect('/home')
   } catch (error) {
     next(error)
   }
 }
 
+// ------------------ GOOGLE AUTH ------------------
 const googleAuth = async (req, res, next) => {
   const { email, name, picture } = req.body
 
@@ -119,11 +115,7 @@ const googleAuth = async (req, res, next) => {
       await userDetail.save()
     }
 
-    const token = jwt.sign(
-      { id: userDetail._id, isAdmin: userDetail.isAdmin },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
-    )
+    const token = generateToken(userDetail)
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -132,12 +124,8 @@ const googleAuth = async (req, res, next) => {
       maxAge: 24 * 60 * 60 * 1000
     })
 
-    const { password: _, ...user } = userDetail._doc
-
-    res.status(200).json({
-      message: "User authenticated successfully",
-      result: user
-    })
+    // Redirect to home feed
+    res.redirect('/home')
   } catch (error) {
     next(error)
   }

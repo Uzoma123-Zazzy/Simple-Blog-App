@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog-App</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Blog-App</h1>
+        <div class="header-buttons">
+            <button id="profileBtn">Profile</button>
+            <button id="createPostBtn">Create Post</button>
+        </div>
+    </header>
+
+    <main>
+        <% if (posts.length === 0) { %>
+            <p class="no-posts">No posts available</p>
+        <% } else { %>
+            <% posts.forEach(post => { %>
+                <div class="post-card">
+                    <h2 class="post-title"><%= post.title %></h2>
+                    <p class="post-category">Category: <%= post.category %></p>
+                    <p class="post-content"><%= post.content %></p>
+                    <% if (post.image) { %>
+                        <img src="<%= post.image %>" alt="Post Image" class="post-image">
+                    <% } %>
+                    <% if (user.isAdmin) { %>
+                        <button class="delete-btn" data-id="<%= post._id %>">Delete</button>
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } %>
+    </main>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

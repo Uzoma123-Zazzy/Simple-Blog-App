@@ -75,23 +75,23 @@ const getPostById = async (req, res, next) => {
 
 const deletePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id)
     if (!post)
       return res
         .status(404)
-        .json({ success: false, message: "Post not found" });
+        .json({ success: false, message: "Post not found" })
 
+    // Only admins can delete
     if (!req.user.isAdmin) {
-      return next(errorHandler(403, "Only admins can delete posts"));
+      return next(errorHandler(403, "Only admins can delete posts"))
     }
 
-    await post.deleteOne();
-    res
-      .status(200)
-      .json({ success: true, message: "Post deleted successfully" });
+    await post.deleteOne()
+
+    res.status(200).json({ success: true, message: "Post deleted successfully" })
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 module.exports = {createPost, deletePost, getAllPosts, getPostById}

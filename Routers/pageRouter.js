@@ -1,4 +1,5 @@
 const express = require("express");
+const Post = require("../Models/postModel.js") 
 const {middleware} = require('../Middleware/MiddleWare.js')  
 
 const router = express.Router();
@@ -7,6 +8,21 @@ const router = express.Router();
 router.get("/", (req, res) => {
   res.render("home", { user: null });
 });
+
+router.get('/posts', middleware, async (req, res, next) => {
+  try {
+    // Fetch all posts from database
+    const posts = await Post.find({}).sort({ createdAt: -1 }) // newest first
+
+    // Pass posts and current user to EJS
+    res.render('Posts', {
+      posts,
+      user: req.user
+    })
+  } catch (error) {
+    next(error)
+  }
+})
 
 router.get("/signin", (req, res) => {
   res.render("signin");
