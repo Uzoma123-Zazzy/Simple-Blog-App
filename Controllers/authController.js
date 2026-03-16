@@ -21,35 +21,50 @@ const registerUser = async (req, res, next) => {
 
   try {
     if (!username || !email || !password) {
-      return res.render('signup', { error: "All fields are required", username, email })
+      return next(errorHandler(400, "All fields are required"))
     }
 
     if (!validator.isEmail(email)) {
-      return res.render('signup', { error: "Invalid email format", username, email })
+      return next(errorHandler(400, "Invalid email format"))
     }
 
     const existingUser = await User.findOne({ email })
     if (existingUser) {
-      return res.render('signup', { error: "User already exists", username, email })
+      return next(errorHandler(409, "User already exists"))
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
-    const newUser = new User({ username, email, password: hashedPassword })
+
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword
+    })
+
     await newUser.save()
 
     const token = generateToken(newUser)
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24*60*60*1000
+      maxAge: 24 * 60 * 60 * 1000
     })
 
-    res.redirect('Posts')
+    const { password: _, ...user } = newUser._doc
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      result: user
+    })
+
   } catch (err) {
     next(err)
   }
 }
+
 
 // ---------------- SIGN IN ----------------
 const signinUser = async (req, res, next) => {
@@ -57,37 +72,45 @@ const signinUser = async (req, res, next) => {
 
   try {
     if (!email || !password) {
-      return res.render('signin', { error: "All fields are required", email })
+      return next(errorHandler(400, "All fields are required"))
     }
 
     const user = await User.findOne({ email }).select("+password")
+
     if (!user) {
-      return res.render('signin', { error: "User not found", email })
+      return next(errorHandler(404, "User not found"))
     }
 
     const isValid = await bcrypt.compare(password, user.password)
+
     if (!isValid) {
-      return res.render('signin', { error: "Invalid credentials", email })
+      return next(errorHandler(401, "Invalid credentials"))
     }
 
     const token = generateToken(user)
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24*60*60*1000
+      maxAge: 24 * 60 * 60 * 1000
     })
 
-    res.redirect('Posts')
+    const { password: _, ...userData } = user._doc
+
+    res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      result: userData
+    })
+
   } catch (err) {
     next(err)
   }
 }
 
-module.exports = { registerUser, signinUser }
 
-
-// ------------------ GOOGLE AUTH ------------------
+// ---------------- GOOGLE AUTH ----------------
 const googleAuth = async (req, res, next) => {
   const { email, name, picture } = req.body
 
@@ -95,6 +118,7 @@ const googleAuth = async (req, res, next) => {
     let userDetail = await User.findOne({ email })
 
     if (!userDetail) {
+
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8)
@@ -122,8 +146,14 @@ const googleAuth = async (req, res, next) => {
       maxAge: 24 * 60 * 60 * 1000
     })
 
-    // Redirect to home feed
-    res.redirect('/Posts')
+    const { password: _, ...user } = userDetail._doc
+
+    res.status(200).json({
+      success: true,
+      message: "User authenticated successfully",
+      result: user
+    })
+
   } catch (error) {
     next(error)
   }
