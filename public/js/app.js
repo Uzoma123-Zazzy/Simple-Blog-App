@@ -93,9 +93,15 @@ const createTrashIcon = () => {
   return icon;
 };
 
-const deletePost = async (postId) => {
+const deletePost = async (postId, postTitle = "this post") => {
   if (!currentUser?.isAdmin) {
     setStatus("Only admins can delete posts.", true);
+    return;
+  }
+
+  const confirmed = window.confirm(`Are you sure you want to delete ${postTitle}?`);
+
+  if (!confirmed) {
     return;
   }
 
@@ -156,7 +162,7 @@ const renderPosts = (posts) => {
       deleteButton.title = "Delete post";
       deleteButton.setAttribute("aria-label", `Delete ${post.title || "post"}`);
       deleteButton.appendChild(createTrashIcon());
-      deleteButton.addEventListener("click", () => deletePost(post._id));
+      deleteButton.addEventListener("click", () => deletePost(post._id, post.title || "this post"));
       actions.appendChild(deleteButton);
       body.appendChild(actions);
     }
