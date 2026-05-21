@@ -13,6 +13,11 @@ const searchForm = document.querySelector("#searchForm");
 const searchInput = document.querySelector("#searchInput");
 const postForm = document.querySelector("#postForm");
 const refreshPosts = document.querySelector("#refreshPosts");
+const dashboard = document.querySelector("#dashboard");
+const toggleDashboard = document.querySelector("#toggleDashboard");
+const openCreatePost = document.querySelector("#openCreatePost");
+const createPostDialog = document.querySelector("#createPostDialog");
+const closeCreatePost = document.querySelector("#closeCreatePost");
 const authDialog = document.querySelector("#authDialog");
 const openAuth = document.querySelector("#openAuth");
 const closeAuth = document.querySelector("#closeAuth");
@@ -152,6 +157,21 @@ refreshPosts.addEventListener("click", () => {
   loadPosts();
 });
 
+toggleDashboard.addEventListener("click", () => {
+  const isCollapsed = dashboard.classList.toggle("is-collapsed");
+  document.body.classList.toggle("dashboard-collapsed", isCollapsed);
+  toggleDashboard.setAttribute("aria-expanded", String(!isCollapsed));
+  toggleDashboard.setAttribute("aria-label", isCollapsed ? "Expand dashboard" : "Minimize dashboard");
+});
+
+openCreatePost.addEventListener("click", () => {
+  createPostDialog.showModal();
+});
+
+closeCreatePost.addEventListener("click", () => {
+  createPostDialog.close();
+});
+
 postForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -169,6 +189,7 @@ postForm.addEventListener("submit", async (event) => {
       body: JSON.stringify(payload),
     });
     postForm.reset();
+    createPostDialog.close();
     await loadPosts();
     setStatus("Post published.");
   } catch (error) {
@@ -204,7 +225,7 @@ authSubmit.addEventListener("click", async () => {
       body: JSON.stringify(payload),
     });
     authMessage.textContent = "Signed in.";
-    openAuth.textContent = "Signed in";
+    openAuth.remove();
     setTimeout(() => authDialog.close(), 450);
   } catch (error) {
     authMessage.textContent = error.message;
