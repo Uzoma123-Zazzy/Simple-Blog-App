@@ -25,15 +25,24 @@ app.use(cookieParser());
 // Middleware to handle cross-origin requests
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"], 
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://simple-blog-app-nu.vercel.app"], 
     credentials: true,   
   })
 );
 
+const requireDatabase = async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Route middlewares
-app.use("/api/auth", authRoute);    // Routes for registration, login, Google auth
-app.use("/api/user", userRoute);    // Routes for user update, delete
-app.use("/api/post", postRoute);    // Routes for blog post creation and retrieval
+app.use("/api/auth", requireDatabase, authRoute);    // Routes for registration, login, Google auth
+app.use("/api/user", requireDatabase, userRoute);    // Routes for user update, delete
+app.use("/api/post", requireDatabase, postRoute);    // Routes for blog post creation and retrieval
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/api")) {
