@@ -28,6 +28,21 @@ body.dashboard-collapsed {
   padding-left: 86px;
 }
 
+body.auth-locked,
+body.auth-locked.dashboard-collapsed {
+  padding-left: 0;
+}
+
+body.auth-locked .topbar,
+body.auth-locked .dashboard,
+body.auth-locked main {
+  display: none;
+}
+
+body.auth-locked #closeAuth {
+  display: none;
+}
+
 button,
 input,
 select,

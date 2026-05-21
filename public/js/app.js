@@ -1,4 +1,5 @@
 const API = {
+  me: "/api/auth/me",
   posts: "/api/post/getallposts",
   post: "/api/post/getpost",
   createPost: "/api/post/createpost",
@@ -32,6 +33,7 @@ const emailInput = document.querySelector("#emailInput");
 const passwordInput = document.querySelector("#passwordInput");
 
 let authMode = "signin";
+let isAuthenticated = false;
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -147,12 +149,47 @@ const setAuthMode = (mode) => {
   authMessage.textContent = "";
 };
 
+const showAuthGate = (message = "") => {
+  isAuthenticated = false;
+  document.body.classList.add("auth-locked");
+  authMessage.textContent = message;
+  authMessage.style.color = message ? "#b42318" : "";
+
+  if (!authDialog.open) {
+    authDialog.showModal();
+  }
+};
+
+const unlockBlog = async () => {
+  isAuthenticated = true;
+  document.body.classList.remove("auth-locked");
+  if (openAuth.isConnected) {
+    openAuth.remove();
+  }
+  if (authDialog.open) {
+    authDialog.close();
+  }
+  await loadPosts();
+};
+
+const checkSession = async () => {
+  try {
+    await request(API.me);
+    await unlockBlog();
+  } catch (error) {
+    postsGrid.innerHTML = "";
+    postCount.textContent = "";
+    showAuthGate("");
+  }
+};
+
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
   loadPosts(searchInput.value.trim());
 });
 
 refreshPosts.addEventListener("click", () => {
+  if (!isAuthenticated) return;
   searchInput.value = "";
   loadPosts();
 });
@@ -165,6 +202,10 @@ toggleDashboard.addEventListener("click", () => {
 });
 
 openCreatePost.addEventListener("click", () => {
+  if (!isAuthenticated) {
+    showAuthGate("Sign in before creating a post.");
+    return;
+  }
   createPostDialog.showModal();
 });
 
@@ -202,7 +243,14 @@ openAuth.addEventListener("click", () => {
 });
 
 closeAuth.addEventListener("click", () => {
+  if (!isAuthenticated) return;
   authDialog.close();
+});
+
+authDialog.addEventListener("cancel", (event) => {
+  if (!isAuthenticated) {
+    event.preventDefault();
+  }
 });
 
 signinTab.addEventListener("click", () => setAuthMode("signin"));
@@ -225,8 +273,7 @@ authSubmit.addEventListener("click", async () => {
       body: JSON.stringify(payload),
     });
     authMessage.textContent = "Signed in.";
-    openAuth.remove();
-    setTimeout(() => authDialog.close(), 450);
+    await unlockBlog();
   } catch (error) {
     authMessage.textContent = error.message;
     authMessage.style.color = "#b42318";
@@ -234,4 +281,4 @@ authSubmit.addEventListener("click", async () => {
 });
 
 setAuthMode("signin");
-loadPosts();
+checkSession();
