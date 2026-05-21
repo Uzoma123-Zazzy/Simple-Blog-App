@@ -48,7 +48,9 @@ const request = async (url, options = {}) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok || data.success === false) {
-    throw new Error(data.message || "Request failed");
+    const error = new Error(data.message || "Request failed");
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -63,7 +65,7 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const excerpt = (text, max = 150) => {
+const excerpt = (text, max = 115) => {
   if (!text) return "";
   return text.length > max ? `${text.slice(0, max).trim()}...` : text;
 };
@@ -132,6 +134,10 @@ const loadPosts = async (search = "") => {
   } catch (error) {
     postCount.textContent = "0 posts";
     postsGrid.innerHTML = "";
+    if (error.status === 401 || error.status === 403) {
+      showAuthGate("Sign in or register to view the blog.");
+      return;
+    }
     setStatus(error.message, true);
   }
 };
@@ -151,6 +157,7 @@ const setAuthMode = (mode) => {
 
 const showAuthGate = (message = "") => {
   isAuthenticated = false;
+  setAuthMode("register");
   document.body.classList.add("auth-locked");
   authMessage.textContent = message;
   authMessage.style.color = message ? "#b42318" : "";
@@ -172,19 +179,12 @@ const unlockBlog = async () => {
   await loadPosts();
 };
 
-const checkSession = async () => {
-  try {
-    await request(API.me);
-    await unlockBlog();
-  } catch (error) {
-    postsGrid.innerHTML = "";
-    postCount.textContent = "";
-    showAuthGate("");
-  }
-};
-
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (!isAuthenticated) {
+    showAuthGate("Sign in or register to view the blog.");
+    return;
+  }
   loadPosts(searchInput.value.trim());
 });
 
@@ -280,5 +280,5 @@ authSubmit.addEventListener("click", async () => {
   }
 });
 
-setAuthMode("signin");
-checkSession();
+setAuthMode("register");
+showAuthGate("");
