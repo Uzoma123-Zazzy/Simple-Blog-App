@@ -1,7 +1,7 @@
 const Post = require("../Models/postModel.js")
 const { errorHandler } = require("../Utils/Error.js")
 
-// ---------------- CREATE POST ----------------
+//  CREATE POST 
 const createPost = async (req, res, next) => {
   try {
 
@@ -33,7 +33,7 @@ const createPost = async (req, res, next) => {
 }
 
 
-// ---------------- GET ALL POSTS ----------------
+// GET ALL POSTS 
 const getAllPosts = async (req, res, next) => {
   try {
 
@@ -65,7 +65,7 @@ const getAllPosts = async (req, res, next) => {
 }
 
 
-// ---------------- GET POST BY ID ----------------
+// GET POST BY ID
 const getPostById = async (req, res, next) => {
   try {
 
@@ -87,7 +87,7 @@ const getPostById = async (req, res, next) => {
 }
 
 
-// ---------------- DELETE POST ----------------
+// DELETE POST 
 const deletePost = async (req, res, next) => {
   try {
 

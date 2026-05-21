@@ -3,7 +3,7 @@ const { errorHandler } = require('../Utils/Error.js')
 const bcrypt = require('bcrypt')
 
 
-// ---------------- UPDATE USER ----------------
+// UPDATE USER 
 const updateUser = async (req, res, next) => {
   try {
 
@@ -72,7 +72,7 @@ const updateUser = async (req, res, next) => {
 }
 
 
-// ---------------- DELETE USER ----------------
+// DELETE USER
 const deleteUser = async (req, res, next) => {
   try {
 

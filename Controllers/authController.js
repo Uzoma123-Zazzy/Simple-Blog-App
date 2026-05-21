@@ -15,7 +15,7 @@ const generateToken = (user) => {
   )
 }
 
-// ---------------- SIGN UP ----------------
+// SIGN UP
 const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body
 
@@ -66,7 +66,7 @@ const registerUser = async (req, res, next) => {
 }
 
 
-// ---------------- SIGN IN ----------------
+// SIGN IN 
 const signinUser = async (req, res, next) => {
   const { email, password } = req.body
 
@@ -110,7 +110,7 @@ const signinUser = async (req, res, next) => {
 }
 
 
-// ---------------- GOOGLE AUTH ----------------
+// GOOGLE AUTH 
 const googleAuth = async (req, res, next) => {
   const { email, name, picture } = req.body
 
