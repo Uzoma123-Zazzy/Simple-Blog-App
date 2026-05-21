@@ -5,8 +5,8 @@ const { errorHandler } = require("../Utils/Error.js")
 const createPost = async (req, res, next) => {
   try {
 
-    if (!req.body.title || !req.body.content) {
-      return next(errorHandler(400, "Title and content are required"))
+    if (!req.body.title || !req.body.content || !req.body.category) {
+      return next(errorHandler(400, "Title, content, and category are required"))
     }
 
     const { title, content, image, category } = req.body

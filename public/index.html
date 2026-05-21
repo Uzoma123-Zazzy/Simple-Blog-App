@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="Blog home">Blog</a>
+      <nav class="nav-actions" aria-label="Primary">
+        <button class="ghost-button" id="refreshPosts" type="button">Refresh</button>
+        <button class="primary-button" id="openAuth" type="button">Sign in</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">Latest posts</p>
+          <h1 id="pageTitle">Read what is new.</h1>
+        </div>
+        <form class="search-form" id="searchForm">
+          <label class="sr-only" for="searchInput">Search posts</label>
+          <input id="searchInput" name="search" type="search" placeholder="Search title, content, or category" />
+          <button class="primary-button" type="submit">Search</button>
+        </form>
+      </section>
+
+      <section class="workspace">
+        <aside class="compose-panel" aria-labelledby="composeTitle">
+          <div class="panel-heading">
+            <p class="eyebrow">Write</p>
+            <h2 id="composeTitle">Create a post</h2>
+          </div>
+          <form id="postForm" class="stacked-form">
+            <label for="postTitle">Title</label>
+            <input id="postTitle" name="title" type="text" maxlength="100" required />
+
+            <label for="postCategory">Category</label>
+            <select id="postCategory" name="category" required>
+              <option value="Technology">Technology</option>
+              <option value="Health">Health</option>
+              <option value="Lifestyle">Lifestyle</option>
+              <option value="Education">Education</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Business">Business</option>
+              <option value="Science">Science</option>
+            </select>
+
+            <label for="postImage">Image URL</label>
+            <input id="postImage" name="image" type="url" placeholder="https://example.com/image.jpg" />
+
+            <label for="postContent">Content</label>
+            <textarea id="postContent" name="content" rows="7" maxlength="10000" required></textarea>
+
+            <button class="primary-button wide" type="submit">Publish</button>
+          </form>
+        </aside>
+
+        <section class="posts-section" aria-live="polite">
+          <div class="section-heading">
+            <h2>Posts</h2>
+            <p id="postCount">Loading...</p>
+          </div>
+          <div id="statusMessage" class="status" role="status"></div>
+          <div id="postsGrid" class="posts-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="authDialog" class="auth-dialog">
+      <form method="dialog" class="dialog-shell">
+        <button class="icon-button close-dialog" id="closeAuth" value="cancel" type="button" aria-label="Close">x</button>
+        <div class="panel-heading">
+          <p class="eyebrow">Account</p>
+          <h2 id="authTitle">Sign in</h2>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Authentication mode">
+          <button class="tab active" id="signinTab" type="button">Sign in</button>
+          <button class="tab" id="registerTab" type="button">Register</button>
+        </div>
+        <div id="authMessage" class="status"></div>
+        <label id="usernameLabel" class="hidden" for="usernameInput">Username</label>
+        <input id="usernameInput" class="hidden" type="text" autocomplete="username" />
+        <label for="emailInput">Email</label>
+        <input id="emailInput" type="email" autocomplete="email" required />
+        <label for="passwordInput">Password</label>
+        <input id="passwordInput" type="password" autocomplete="current-password" required />
+        <button class="primary-button wide" id="authSubmit" type="button">Sign in</button>
+      </form>
+    </dialog>
+
+    <script src="./js/app.js"></script>
+  </body>
+</html>

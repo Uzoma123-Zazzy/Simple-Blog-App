@@ -7,9 +7,9 @@ const router = express.Router();
 
 router.post("/createpost", middleware, createPost);
 
-router.get("/getallposts", middleware, getAllPosts);
+router.get("/getallposts", getAllPosts);
 
-router.get("/getpost/:id", middleware, getPostById);
+router.get("/getpost/:id", getPostById);
 
 router.delete("/delete/:id",middleware ,  deletePost)
 
