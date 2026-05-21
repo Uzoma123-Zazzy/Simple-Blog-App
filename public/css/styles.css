@@ -427,6 +427,25 @@ textarea:focus {
   font-weight: 800;
 }
 
+.auth-switch {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0.25rem 0 0;
+  text-align: center;
+}
+
+.auth-switch button {
+  background: transparent;
+  border: 0;
+  color: var(--accent-dark);
+  font-weight: 800;
+  padding: 0;
+}
+
+.auth-switch button:hover {
+  text-decoration: underline;
+}
+
 .hidden {
   display: none;
 }

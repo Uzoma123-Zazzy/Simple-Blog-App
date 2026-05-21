@@ -31,6 +31,8 @@ const usernameLabel = document.querySelector("#usernameLabel");
 const usernameInput = document.querySelector("#usernameInput");
 const emailInput = document.querySelector("#emailInput");
 const passwordInput = document.querySelector("#passwordInput");
+const authSwitchText = document.querySelector("#authSwitchText");
+const authSwitchButton = document.querySelector("#authSwitchButton");
 
 let authMode = "signin";
 let isAuthenticated = false;
@@ -152,6 +154,8 @@ const setAuthMode = (mode) => {
   usernameLabel.classList.toggle("hidden", !isRegister);
   usernameInput.classList.toggle("hidden", !isRegister);
   usernameInput.required = isRegister;
+  authSwitchText.firstChild.textContent = isRegister ? "Already have an account? " : "Do not have an account? ";
+  authSwitchButton.textContent = isRegister ? "signin" : "register";
   authMessage.textContent = "";
 };
 
@@ -255,6 +259,9 @@ authDialog.addEventListener("cancel", (event) => {
 
 signinTab.addEventListener("click", () => setAuthMode("signin"));
 registerTab.addEventListener("click", () => setAuthMode("register"));
+authSwitchButton.addEventListener("click", () => {
+  setAuthMode(authMode === "register" ? "signin" : "register");
+});
 
 authSubmit.addEventListener("click", async () => {
   const payload = {
