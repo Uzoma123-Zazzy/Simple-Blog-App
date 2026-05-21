@@ -3,6 +3,7 @@ const API = {
   posts: "/api/post/getallposts",
   post: "/api/post/getpost",
   createPost: "/api/post/createpost",
+  deletePost: "/api/post/delete",
   signin: "/api/auth/signin-user",
   register: "/api/auth/register-user",
 };
@@ -36,6 +37,7 @@ const authSwitchButton = document.querySelector("#authSwitchButton");
 
 let authMode = "signin";
 let isAuthenticated = false;
+let currentUser = null;
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -77,6 +79,38 @@ const setStatus = (message, isError = false) => {
   statusMessage.style.color = isError ? "#b42318" : "";
 };
 
+const createTrashIcon = () => {
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("aria-hidden", "true");
+  icon.innerHTML = `
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v5" />
+    <path d="M14 11v5" />
+  `;
+  return icon;
+};
+
+const deletePost = async (postId) => {
+  if (!currentUser?.isAdmin) {
+    setStatus("Only admins can delete posts.", true);
+    return;
+  }
+
+  try {
+    setStatus("Deleting post...");
+    await request(`${API.deletePost}/${postId}`, {
+      method: "DELETE",
+    });
+    await loadPosts(searchInput.value.trim());
+    setStatus("Post deleted.");
+  } catch (error) {
+    setStatus(error.message, true);
+  }
+};
+
 const renderPosts = (posts) => {
   postsGrid.innerHTML = "";
   postCount.textContent = `${posts.length} ${posts.length === 1 ? "post" : "posts"}`;
@@ -111,6 +145,21 @@ const renderPosts = (posts) => {
 
     const date = document.createElement("span");
     date.textContent = formatDate(post.createdAt);
+
+    if (currentUser?.isAdmin) {
+      const actions = document.createElement("div");
+      actions.className = "post-actions";
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "post-delete-button";
+      deleteButton.type = "button";
+      deleteButton.title = "Delete post";
+      deleteButton.setAttribute("aria-label", `Delete ${post.title || "post"}`);
+      deleteButton.appendChild(createTrashIcon());
+      deleteButton.addEventListener("click", () => deletePost(post._id));
+      actions.appendChild(deleteButton);
+      body.appendChild(actions);
+    }
 
     const title = document.createElement("h3");
     title.textContent = post.title || "Untitled post";
@@ -161,6 +210,7 @@ const setAuthMode = (mode) => {
 
 const showAuthGate = (message = "") => {
   isAuthenticated = false;
+  currentUser = null;
   setAuthMode("register");
   document.body.classList.add("auth-locked");
   authMessage.textContent = message;
@@ -171,8 +221,9 @@ const showAuthGate = (message = "") => {
   }
 };
 
-const unlockBlog = async () => {
+const unlockBlog = async (user) => {
   isAuthenticated = true;
+  currentUser = user;
   document.body.classList.remove("auth-locked");
   if (openAuth.isConnected) {
     openAuth.remove();
@@ -275,12 +326,12 @@ authSubmit.addEventListener("click", async () => {
 
   try {
     authMessage.textContent = "Working...";
-    await request(authMode === "register" ? API.register : API.signin, {
+    const data = await request(authMode === "register" ? API.register : API.signin, {
       method: "POST",
       body: JSON.stringify(payload),
     });
     authMessage.textContent = "Signed in.";
-    await unlockBlog();
+    await unlockBlog(data.result);
   } catch (error) {
     authMessage.textContent = error.message;
     authMessage.style.color = "#b42318";

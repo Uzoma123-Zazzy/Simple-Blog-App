@@ -1,4 +1,5 @@
 const Post = require("../Models/postModel.js")
+const User = require("../Models/userModel.js")
 const { errorHandler } = require("../Utils/Error.js")
 
 //  CREATE POST 
@@ -97,8 +98,10 @@ const deletePost = async (req, res, next) => {
       return next(errorHandler(404, "Post not found"))
     }
 
+    const user = await User.findById(req.user.id)
+
     // Only admins can delete posts
-    if (!req.user.isAdmin) {
+    if (!user?.isAdmin) {
       return next(errorHandler(403, "Only admins can delete posts"))
     }
 
