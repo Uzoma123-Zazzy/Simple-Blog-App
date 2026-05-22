@@ -42,6 +42,7 @@ const postSchema = new mongoose.Schema(
         "Entertainment",
         "Business",
         "Science",
+        "Sports",
       ], 
     },
 

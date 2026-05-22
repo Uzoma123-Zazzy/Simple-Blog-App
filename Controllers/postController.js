@@ -49,9 +49,9 @@ const getAllPosts = async (req, res, next) => {
           { content: { $regex: search, $options: "i" } },
           { category: { $regex: search, $options: "i" } },
         ],
-      }).sort({ createdAt: -1 })
+      }).sort({ updatedAt: -1, createdAt: -1 })
     } else {
-      posts = await Post.find().sort({ createdAt: -1 })
+      posts = await Post.find().sort({ updatedAt: -1, createdAt: -1 })
     }
 
     res.status(200).json({
@@ -80,6 +80,49 @@ const getPostById = async (req, res, next) => {
       success: true,
       message: "Post fetched successfully",
       result: post,
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+// UPDATE POST
+const updatePost = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+
+    if (!post) {
+      return next(errorHandler(404, "Post not found"))
+    }
+
+    if (!post.userId || post.userId.toString() !== req.user.id) {
+      return next(errorHandler(403, "You can only update your own post"))
+    }
+
+    const allowedFields = ["title", "content", "image", "category"]
+    const updateFields = {}
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updateFields[field] = req.body[field]
+      }
+    })
+
+    if (Object.keys(updateFields).length === 0) {
+      return next(errorHandler(400, "No post fields provided for update"))
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    )
+
+    res.status(200).json({
+      success: true,
+      message: "Post updated successfully",
+      result: updatedPost,
     })
 
   } catch (error) {
@@ -122,4 +165,5 @@ module.exports = {
   deletePost,
   getAllPosts,
   getPostById,
+  updatePost,
 }

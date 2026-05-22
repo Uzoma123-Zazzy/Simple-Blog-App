@@ -3,6 +3,7 @@ const API = {
   posts: "/api/post/getallposts",
   post: "/api/post/getpost",
   createPost: "/api/post/createpost",
+  updatePost: "/api/post/update",
   deletePost: "/api/post/delete",
   signin: "/api/auth/signin-user",
   register: "/api/auth/register-user",
@@ -15,11 +16,27 @@ const searchForm = document.querySelector("#searchForm");
 const searchInput = document.querySelector("#searchInput");
 const postForm = document.querySelector("#postForm");
 const refreshPosts = document.querySelector("#refreshPosts");
+const showPosts = document.querySelector("#showPosts");
+const postsSection = document.querySelector("#postsSection");
 const dashboard = document.querySelector("#dashboard");
 const toggleDashboard = document.querySelector("#toggleDashboard");
 const openCreatePost = document.querySelector("#openCreatePost");
 const createPostDialog = document.querySelector("#createPostDialog");
 const closeCreatePost = document.querySelector("#closeCreatePost");
+const editPostDialog = document.querySelector("#editPostDialog");
+const closeEditPost = document.querySelector("#closeEditPost");
+const editPostForm = document.querySelector("#editPostForm");
+const editPostTitle = document.querySelector("#editPostTitle");
+const editPostCategory = document.querySelector("#editPostCategory");
+const editPostImage = document.querySelector("#editPostImage");
+const editPostContent = document.querySelector("#editPostContent");
+const readPostDialog = document.querySelector("#readPostDialog");
+const closeReadPost = document.querySelector("#closeReadPost");
+const readPostImage = document.querySelector("#readPostImage");
+const readPostCategory = document.querySelector("#readPostCategory");
+const readPostDate = document.querySelector("#readPostDate");
+const readPostTitle = document.querySelector("#readPostTitle");
+const readPostBody = document.querySelector("#readPostBody");
 const authDialog = document.querySelector("#authDialog");
 const openAuth = document.querySelector("#openAuth");
 const closeAuth = document.querySelector("#closeAuth");
@@ -38,6 +55,7 @@ const authSwitchButton = document.querySelector("#authSwitchButton");
 let authMode = "signin";
 let isAuthenticated = false;
 let currentUser = null;
+let editingPostId = null;
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -74,9 +92,53 @@ const excerpt = (text, max = 115) => {
   return text.length > max ? `${text.slice(0, max).trim()}...` : text;
 };
 
+const fileToDataUrl = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(new Error("Could not read selected image")));
+    reader.readAsDataURL(file);
+  });
+};
+
+const getSelectedImage = async (input) => {
+  const file = input.files?.[0];
+
+  if (!file) {
+    return "";
+  }
+
+  if (file.size > 3 * 1024 * 1024) {
+    throw new Error("Please select an image smaller than 3MB");
+  }
+
+  return fileToDataUrl(file);
+};
+
 const setStatus = (message, isError = false) => {
   statusMessage.textContent = message;
   statusMessage.style.color = isError ? "#b42318" : "";
+  statusMessage.style.fontWeight = isError ? "800" : "";
+};
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getCurrentUserId = () => currentUser?._id || currentUser?.id;
+
+const isPostOwner = (post) => {
+  const postUserId = typeof post.userId === "object" ? post.userId?._id : post.userId;
+  return Boolean(postUserId && getCurrentUserId() && String(postUserId) === String(getCurrentUserId()));
+};
+
+const createEditIcon = () => {
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("aria-hidden", "true");
+  icon.innerHTML = `
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  `;
+  return icon;
 };
 
 const createTrashIcon = () => {
@@ -91,6 +153,37 @@ const createTrashIcon = () => {
     <path d="M14 11v5" />
   `;
   return icon;
+};
+
+const openEditPostDialog = (post) => {
+  editingPostId = post._id;
+  editPostTitle.value = post.title || "";
+  editPostCategory.value = post.category || "Technology";
+  editPostImage.value = "";
+  editPostContent.value = post.content || "";
+  editPostDialog.showModal();
+};
+
+const openReadPostDialog = async (postId) => {
+  try {
+    setStatus("Opening post...");
+    const data = await request(`${API.post}/${postId}`);
+    const post = data.result;
+
+    readPostImage.src = post.image || "";
+    readPostCategory.textContent = post.category || "Uncategorized";
+    readPostDate.textContent = formatDate(post.createdAt);
+    readPostTitle.textContent = post.title || "Untitled post";
+    readPostBody.textContent = post.content || "";
+    setStatus("");
+    readPostDialog.showModal();
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      showAuthGate("Sign in or register to view the blog.");
+      return;
+    }
+    setStatus(error.message, true);
+  }
 };
 
 const deletePost = async (postId, postTitle = "this post") => {
@@ -133,6 +226,20 @@ const renderPosts = (posts) => {
   posts.forEach((post) => {
     const card = document.createElement("article");
     card.className = "post-card";
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `Read ${post.title || "post"}`);
+    card.addEventListener("click", () => openReadPostDialog(post._id));
+    card.addEventListener("keydown", (event) => {
+      if (event.target.closest("button")) {
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openReadPostDialog(post._id);
+      }
+    });
 
     const image = document.createElement("img");
     image.src = post.image || "";
@@ -152,18 +259,41 @@ const renderPosts = (posts) => {
     const date = document.createElement("span");
     date.textContent = formatDate(post.createdAt);
 
-    if (currentUser?.isAdmin) {
+    const canEdit = isPostOwner(post);
+    const canDelete = currentUser?.isAdmin;
+
+    if (canEdit || canDelete) {
       const actions = document.createElement("div");
       actions.className = "post-actions";
 
-      const deleteButton = document.createElement("button");
-      deleteButton.className = "post-delete-button";
-      deleteButton.type = "button";
-      deleteButton.title = "Delete post";
-      deleteButton.setAttribute("aria-label", `Delete ${post.title || "post"}`);
-      deleteButton.appendChild(createTrashIcon());
-      deleteButton.addEventListener("click", () => deletePost(post._id, post.title || "this post"));
-      actions.appendChild(deleteButton);
+      if (canEdit) {
+        const editButton = document.createElement("button");
+        editButton.className = "post-edit-button";
+        editButton.type = "button";
+        editButton.title = "Edit post";
+        editButton.setAttribute("aria-label", `Edit ${post.title || "post"}`);
+        editButton.appendChild(createEditIcon());
+        editButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          openEditPostDialog(post);
+        });
+        actions.appendChild(editButton);
+      }
+
+      if (canDelete) {
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "post-delete-button";
+        deleteButton.type = "button";
+        deleteButton.title = "Delete post";
+        deleteButton.setAttribute("aria-label", `Delete ${post.title || "post"}`);
+        deleteButton.appendChild(createTrashIcon());
+        deleteButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          deletePost(post._id, post.title || "this post");
+        });
+        actions.appendChild(deleteButton);
+      }
+
       body.appendChild(actions);
     }
 
@@ -187,7 +317,20 @@ const loadPosts = async (search = "") => {
     setStatus("Loading posts...");
     const query = search ? `?search=${encodeURIComponent(search)}` : "";
     const data = await request(`${API.posts}${query}`);
-    renderPosts(data.result || []);
+    const posts = data.result || [];
+
+    if (search && posts.length === 0) {
+      setStatus(`No posts matched "${search}". Redirecting to all posts.`, true);
+      await wait(1600);
+      const allPostsData = await request(API.posts);
+      searchInput.value = "";
+      renderPosts(allPostsData.result || []);
+      setStatus("");
+      postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    renderPosts(posts);
   } catch (error) {
     postCount.textContent = "0 posts";
     postsGrid.innerHTML = "";
@@ -252,7 +395,14 @@ searchForm.addEventListener("submit", (event) => {
 refreshPosts.addEventListener("click", () => {
   if (!isAuthenticated) return;
   searchInput.value = "";
-  loadPosts();
+  loadPosts().then(() => {
+    postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+showPosts.addEventListener("click", () => {
+  if (!isAuthenticated) return;
+  postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 toggleDashboard.addEventListener("click", () => {
@@ -274,17 +424,30 @@ closeCreatePost.addEventListener("click", () => {
   createPostDialog.close();
 });
 
+closeEditPost.addEventListener("click", () => {
+  editPostDialog.close();
+});
+
+closeReadPost.addEventListener("click", () => {
+  readPostDialog.close();
+});
+
 postForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const formData = new FormData(postForm);
-  const payload = Object.fromEntries(formData.entries());
-
-  if (!payload.image) {
-    delete payload.image;
-  }
-
   try {
+    const payload = {
+      title: postForm.elements.title.value.trim(),
+      category: postForm.elements.category.value,
+      content: postForm.elements.content.value.trim(),
+    };
+
+    const selectedImage = await getSelectedImage(postForm.elements.image);
+
+    if (selectedImage) {
+      payload.image = selectedImage;
+    }
+
     setStatus("Publishing post...");
     await request(API.createPost, {
       method: "POST",
@@ -296,6 +459,40 @@ postForm.addEventListener("submit", async (event) => {
     setStatus("Post published.");
   } catch (error) {
     setStatus(`${error.message}. Sign in first if you have not already.`, true);
+  }
+});
+
+editPostForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (!editingPostId) {
+    return;
+  }
+
+  try {
+    const payload = {
+      title: editPostForm.elements.title.value.trim(),
+      category: editPostForm.elements.category.value,
+      content: editPostForm.elements.content.value.trim(),
+    };
+
+    const selectedImage = await getSelectedImage(editPostForm.elements.image);
+
+    if (selectedImage) {
+      payload.image = selectedImage;
+    }
+
+    setStatus("Updating post...");
+    await request(`${API.updatePost}/${editingPostId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    editingPostId = null;
+    editPostDialog.close();
+    await loadPosts(searchInput.value.trim());
+    setStatus("Post updated.");
+  } catch (error) {
+    setStatus(error.message, true);
   }
 });
 

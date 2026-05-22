@@ -1,6 +1,6 @@
 const express = require('express')
 const {middleware} = require('../Middleware/MiddleWare.js')  
-const {createPost, deletePost, getAllPosts, getPostById} = require('../Controllers/postController.js')
+const {createPost, deletePost, getAllPosts, getPostById, updatePost} = require('../Controllers/postController.js')
 
 
 const router = express.Router(); 
@@ -10,6 +10,8 @@ router.post("/createpost", middleware, createPost);
 router.get("/getallposts", middleware, getAllPosts);
 
 router.get("/getpost/:id", middleware, getPostById);
+
+router.put("/update/:id", middleware, updatePost);
 
 router.delete("/delete/:id",middleware ,  deletePost)
 

@@ -13,8 +13,8 @@ dotenv.config(); // Load environment variables from .env file
 
 
 const app = express();
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.json({ limit: "6mb" }))
+app.use(express.urlencoded({ extended: true, limit: "6mb" }))
 
 app.use(express.static(path.join(__dirname, 'public')))
 
