@@ -2,6 +2,13 @@ const User = require('../Models/userModel.js')
 const { errorHandler } = require('../Utils/Error.js')
 const bcrypt = require('bcrypt')
 
+const DEFAULT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+
+const getUserData = (userDocument) => {
+  const { password: _, ...user } = userDocument._doc
+  return user
+}
+
 
 // UPDATE USER 
 const updateUser = async (req, res, next) => {
@@ -58,12 +65,86 @@ const updateUser = async (req, res, next) => {
       return next(errorHandler(404, "User not found"))
     }
 
-    const { password: _, ...user } = updatedUser._doc
-
     res.status(200).json({
       success: true,
       message: "User updated successfully",
-      result: user,
+      result: getUserData(updatedUser),
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+// GET CURRENT USER PROFILE
+const getProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id)
+
+    if (!user) {
+      return next(errorHandler(404, "User not found"))
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile fetched successfully",
+      result: getUserData(user),
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+// COMPLETE OR UPDATE PROFILE
+const completeProfile = async (req, res, next) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      bio,
+      avatar,
+      profilePicture,
+      personalWebsite,
+      socialLinks,
+      country,
+    } = req.body
+
+    if (!firstName || !lastName || !bio) {
+      return next(errorHandler(400, "First name, last name, and bio are required"))
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $set: {
+          firstName,
+          lastName,
+          bio,
+          profilePicture: avatar || profilePicture || DEFAULT_AVATAR,
+          personalWebsite,
+          socialLinks: {
+            twitter: socialLinks?.twitter || "",
+            facebook: socialLinks?.facebook || "",
+            instagram: socialLinks?.instagram || "",
+            linkedin: socialLinks?.linkedin || "",
+          },
+          country,
+          profileCompleted: true,
+        },
+      },
+      { new: true, runValidators: true }
+    )
+
+    if (!updatedUser) {
+      return next(errorHandler(404, "User not found"))
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile completed successfully",
+      result: getUserData(updatedUser),
     })
 
   } catch (error) {
@@ -98,4 +179,4 @@ const deleteUser = async (req, res, next) => {
   }
 }
 
-module.exports = { updateUser, deleteUser }
+module.exports = { updateUser, deleteUser, getProfile, completeProfile }

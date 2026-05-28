@@ -10,6 +10,9 @@
     <header class="topbar">
       <a class="brand" href="#home" aria-label="Blog home">Blog</a>
       <nav class="nav-actions" aria-label="Primary">
+        <button class="avatar-button hidden" id="openProfile" type="button" aria-label="Open profile">
+          <img id="headerAvatar" alt="" />
+        </button>
         <button class="primary-button" id="openAuth" type="button">Sign in</button>
       </nav>
     </header>
@@ -24,17 +27,19 @@
         <span class="sr-only">Toggle dashboard</span>
       </button>
       <div class="dashboard-actions">
-        <button class="dashboard-link icon-only-link" id="refreshPosts" type="button" aria-label="Refresh posts">
+        <button class="dashboard-link" id="refreshPosts" type="button">
+          <span class="dashboard-text">Refresh</span>
           <span class="dashboard-icon" aria-hidden="true">↻</span>
           <span class="sr-only">Refresh posts</span>
         </button>
         <button class="dashboard-link" id="showPosts" type="button">
-          <span class="dashboard-icon" aria-hidden="true">P</span>
           <span class="dashboard-text">Posts</span>
         </button>
         <button class="dashboard-link" id="openCreatePost" type="button">
-          <span class="dashboard-icon" aria-hidden="true">+</span>
           <span class="dashboard-text">Create post</span>
+        </button>
+        <button class="dashboard-link" id="openProfileFromDashboard" type="button">
+          <span class="dashboard-text">Profile</span>
         </button>
       </div>
     </aside>
@@ -88,6 +93,76 @@
           <button id="authSwitchButton" type="button">signin</button>
         </p>
       </form>
+    </dialog>
+
+    <dialog id="profileSetupDialog" class="profile-dialog">
+      <div class="dialog-shell">
+        <div class="panel-heading">
+          <p class="eyebrow">Profile</p>
+          <h2>Complete your profile</h2>
+        </div>
+        <form id="profileSetupForm" class="stacked-form">
+          <div class="form-grid">
+            <div>
+              <label for="firstNameInput">First name</label>
+              <input id="firstNameInput" name="firstName" type="text" maxlength="50" required />
+            </div>
+            <div>
+              <label for="lastNameInput">Last name</label>
+              <input id="lastNameInput" name="lastName" type="text" maxlength="50" required />
+            </div>
+          </div>
+
+          <label for="bioInput">Bio</label>
+          <textarea id="bioInput" name="bio" rows="4" maxlength="500" required></textarea>
+
+          <label for="avatarInput">Avatar</label>
+          <input id="avatarInput" name="avatar" type="file" accept="image/*" />
+
+          <label for="websiteInput">Personal website</label>
+          <input id="websiteInput" name="personalWebsite" type="url" placeholder="https://example.com" />
+
+          <div class="form-grid">
+            <div>
+              <label for="twitterInput">Twitter</label>
+              <input id="twitterInput" name="twitter" type="url" placeholder="https://twitter.com/username" />
+            </div>
+            <div>
+              <label for="facebookInput">Facebook</label>
+              <input id="facebookInput" name="facebook" type="url" placeholder="https://facebook.com/username" />
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label for="instagramInput">Instagram</label>
+              <input id="instagramInput" name="instagram" type="url" placeholder="https://instagram.com/username" />
+            </div>
+            <div>
+              <label for="linkedinInput">LinkedIn</label>
+              <input id="linkedinInput" name="linkedin" type="url" placeholder="https://linkedin.com/in/username" />
+            </div>
+          </div>
+
+          <input id="countryInput" name="country" type="hidden" />
+          <p class="status" id="profileCountryText"></p>
+          <div id="profileSetupMessage" class="status"></div>
+          <button class="primary-button wide" type="submit">Save profile</button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog id="profileViewDialog" class="profile-dialog">
+      <article class="dialog-shell profile-view-shell">
+        <button class="icon-button close-dialog" id="closeProfileView" value="cancel" type="button" aria-label="Close">x</button>
+        <img id="profileViewAvatar" class="profile-view-avatar" alt="" />
+        <div class="profile-view-content">
+          <p class="eyebrow" id="profileViewCountry"></p>
+          <h2 id="profileViewName"></h2>
+          <p id="profileViewBio"></p>
+          <div class="profile-links" id="profileViewLinks"></div>
+        </div>
+      </article>
     </dialog>
 
     <dialog id="createPostDialog" class="post-dialog">

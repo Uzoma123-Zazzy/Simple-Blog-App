@@ -5,9 +5,12 @@ const API = {
   createPost: "/api/post/createpost",
   updatePost: "/api/post/update",
   deletePost: "/api/post/delete",
+  profile: "/api/user/profile",
   signin: "/api/auth/signin-user",
   register: "/api/auth/register-user",
 };
+
+const DEFAULT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
 
 const postsGrid = document.querySelector("#postsGrid");
 const statusMessage = document.querySelector("#statusMessage");
@@ -18,8 +21,11 @@ const postForm = document.querySelector("#postForm");
 const refreshPosts = document.querySelector("#refreshPosts");
 const showPosts = document.querySelector("#showPosts");
 const postsSection = document.querySelector("#postsSection");
+const openProfile = document.querySelector("#openProfile");
+const headerAvatar = document.querySelector("#headerAvatar");
 const dashboard = document.querySelector("#dashboard");
 const toggleDashboard = document.querySelector("#toggleDashboard");
+const openProfileFromDashboard = document.querySelector("#openProfileFromDashboard");
 const openCreatePost = document.querySelector("#openCreatePost");
 const createPostDialog = document.querySelector("#createPostDialog");
 const closeCreatePost = document.querySelector("#closeCreatePost");
@@ -51,6 +57,27 @@ const emailInput = document.querySelector("#emailInput");
 const passwordInput = document.querySelector("#passwordInput");
 const authSwitchText = document.querySelector("#authSwitchText");
 const authSwitchButton = document.querySelector("#authSwitchButton");
+const profileSetupDialog = document.querySelector("#profileSetupDialog");
+const profileSetupForm = document.querySelector("#profileSetupForm");
+const firstNameInput = document.querySelector("#firstNameInput");
+const lastNameInput = document.querySelector("#lastNameInput");
+const bioInput = document.querySelector("#bioInput");
+const avatarInput = document.querySelector("#avatarInput");
+const websiteInput = document.querySelector("#websiteInput");
+const twitterInput = document.querySelector("#twitterInput");
+const facebookInput = document.querySelector("#facebookInput");
+const instagramInput = document.querySelector("#instagramInput");
+const linkedinInput = document.querySelector("#linkedinInput");
+const countryInput = document.querySelector("#countryInput");
+const profileCountryText = document.querySelector("#profileCountryText");
+const profileSetupMessage = document.querySelector("#profileSetupMessage");
+const profileViewDialog = document.querySelector("#profileViewDialog");
+const closeProfileView = document.querySelector("#closeProfileView");
+const profileViewAvatar = document.querySelector("#profileViewAvatar");
+const profileViewCountry = document.querySelector("#profileViewCountry");
+const profileViewName = document.querySelector("#profileViewName");
+const profileViewBio = document.querySelector("#profileViewBio");
+const profileViewLinks = document.querySelector("#profileViewLinks");
 
 let authMode = "signin";
 let isAuthenticated = false;
@@ -124,6 +151,28 @@ const setStatus = (message, isError = false) => {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getCurrentUserId = () => currentUser?._id || currentUser?.id;
+
+const getDetectedCountry = () => {
+  const locale = navigator.language || "en-US";
+  const region = locale.split("-")[1] || "US";
+
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(region.toUpperCase()) || "United States";
+  } catch (error) {
+    return "United States";
+  }
+};
+
+const getUserDisplayName = (user) => {
+  const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+  return fullName || user?.username || "User";
+};
+
+const syncHeaderProfile = () => {
+  if (!currentUser) return;
+  headerAvatar.src = currentUser.profilePicture || DEFAULT_AVATAR;
+  openProfile.classList.remove("hidden");
+};
 
 const isPostOwner = (post) => {
   const postUserId = typeof post.userId === "object" ? post.userId?._id : post.userId;
@@ -374,6 +423,7 @@ const unlockBlog = async (user) => {
   isAuthenticated = true;
   currentUser = user;
   document.body.classList.remove("auth-locked");
+  syncHeaderProfile();
   if (openAuth.isConnected) {
     openAuth.remove();
   }
@@ -381,6 +431,48 @@ const unlockBlog = async (user) => {
     authDialog.close();
   }
   await loadPosts();
+};
+
+const showProfileSetup = (user) => {
+  currentUser = user;
+  firstNameInput.value = user?.firstName || "";
+  lastNameInput.value = user?.lastName || "";
+  bioInput.value = user?.bio || "";
+  websiteInput.value = user?.personalWebsite || "";
+  twitterInput.value = user?.socialLinks?.twitter || "";
+  facebookInput.value = user?.socialLinks?.facebook || "";
+  instagramInput.value = user?.socialLinks?.instagram || "";
+  linkedinInput.value = user?.socialLinks?.linkedin || "";
+  countryInput.value = user?.country || getDetectedCountry();
+  profileCountryText.textContent = `Country: ${countryInput.value}`;
+  profileSetupMessage.textContent = "";
+  authDialog.close();
+  profileSetupDialog.showModal();
+};
+
+const addProfileLink = (label, value) => {
+  if (!value) return;
+  const link = document.createElement("a");
+  link.href = value;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.textContent = label;
+  profileViewLinks.appendChild(link);
+};
+
+const openProfileDialog = () => {
+  if (!currentUser) return;
+  profileViewAvatar.src = currentUser.profilePicture || DEFAULT_AVATAR;
+  profileViewCountry.textContent = currentUser.country || "";
+  profileViewName.textContent = getUserDisplayName(currentUser);
+  profileViewBio.textContent = currentUser.bio || "No bio yet.";
+  profileViewLinks.innerHTML = "";
+  addProfileLink("Website", currentUser.personalWebsite);
+  addProfileLink("Twitter", currentUser.socialLinks?.twitter);
+  addProfileLink("Facebook", currentUser.socialLinks?.facebook);
+  addProfileLink("Instagram", currentUser.socialLinks?.instagram);
+  addProfileLink("LinkedIn", currentUser.socialLinks?.linkedin);
+  profileViewDialog.showModal();
 };
 
 searchForm.addEventListener("submit", (event) => {
@@ -403,6 +495,12 @@ refreshPosts.addEventListener("click", () => {
 showPosts.addEventListener("click", () => {
   if (!isAuthenticated) return;
   postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+openProfile.addEventListener("click", openProfileDialog);
+openProfileFromDashboard.addEventListener("click", openProfileDialog);
+closeProfileView.addEventListener("click", () => {
+  profileViewDialog.close();
 });
 
 toggleDashboard.addEventListener("click", () => {
@@ -511,6 +609,10 @@ authDialog.addEventListener("cancel", (event) => {
   }
 });
 
+profileSetupDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+});
+
 signinTab.addEventListener("click", () => setAuthMode("signin"));
 registerTab.addEventListener("click", () => setAuthMode("register"));
 authSwitchButton.addEventListener("click", () => {
@@ -534,10 +636,52 @@ authSubmit.addEventListener("click", async () => {
       body: JSON.stringify(payload),
     });
     authMessage.textContent = "Signed in.";
+    if (authMode === "register" || !data.result.profileCompleted) {
+      showProfileSetup(data.result);
+      return;
+    }
+
     await unlockBlog(data.result);
   } catch (error) {
     authMessage.textContent = error.message;
     authMessage.style.color = "#b42318";
+  }
+});
+
+profileSetupForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  try {
+    profileSetupMessage.textContent = "Saving profile...";
+    profileSetupMessage.style.color = "";
+    const selectedAvatar = await getSelectedImage(avatarInput);
+    const payload = {
+      firstName: firstNameInput.value.trim(),
+      lastName: lastNameInput.value.trim(),
+      bio: bioInput.value.trim(),
+      avatar: selectedAvatar || currentUser?.profilePicture || DEFAULT_AVATAR,
+      personalWebsite: websiteInput.value.trim(),
+      socialLinks: {
+        twitter: twitterInput.value.trim(),
+        facebook: facebookInput.value.trim(),
+        instagram: instagramInput.value.trim(),
+        linkedin: linkedinInput.value.trim(),
+      },
+      country: countryInput.value || getDetectedCountry(),
+    };
+
+    const data = await request(API.profile, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+
+    profileSetupForm.reset();
+    profileSetupDialog.close();
+    await unlockBlog(data.result);
+    postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    profileSetupMessage.textContent = error.message;
+    profileSetupMessage.style.color = "#b42318";
   }
 });
 

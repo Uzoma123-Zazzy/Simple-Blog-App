@@ -35,6 +35,67 @@ const userSchema = new mongoose.Schema(
       default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541",
     },
 
+    firstName: {
+      type: String,
+      trim: true,
+      maxlength: [50, "First name cannot exceed 50 characters"],
+      default: "",
+    },
+
+    lastName: {
+      type: String,
+      trim: true,
+      maxlength: [50, "Last name cannot exceed 50 characters"],
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: [500, "Bio cannot exceed 500 characters"],
+      default: "",
+    },
+
+    personalWebsite: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    socialLinks: {
+      twitter: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      facebook: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      instagram: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      linkedin: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+    },
+
+    country: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     // Admin role flag
     isAdmin: {
       type: Boolean,
