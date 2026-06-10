@@ -793,6 +793,6 @@ profileSetupForm.addEventListener("submit", async (event) => {
   }
 });
 
-applyTheme(localStorage.getItem("blogTheme") || "light");
+applyTheme(localStorage.getItem("blogTheme") || "dark");
 setAuthMode("register");
 checkSession();
