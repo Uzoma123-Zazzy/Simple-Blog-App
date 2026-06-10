@@ -1,6 +1,6 @@
 const express = require('express')
 const {googleAuth,registerUser,
-  signinUser,} = require('../Controllers/authController.js') 
+  signinUser, refreshAccessToken, logoutUser,} = require('../Controllers/authController.js') 
 const {middleware} = require('../Middleware/MiddleWare.js')
 const User = require('../Models/userModel.js')
 
@@ -37,6 +37,10 @@ router.post("/signin-user", signinUser);
 
 
 router.post("/googleauth", googleAuth);
+
+router.post("/refresh-token", refreshAccessToken);
+
+router.post("/logout", logoutUser);
 
 
 module.exports = router

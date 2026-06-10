@@ -8,9 +8,12 @@ const API = {
   profile: "/api/user/profile",
   signin: "/api/auth/signin-user",
   register: "/api/auth/register-user",
+  logout: "/api/auth/logout",
 };
 
 const DEFAULT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=900&q=80";
+const OLD_DEFAULT_POST_IMAGE = "img.freepik.com/premium-vector/illustration-vector-graphic-cartoon-character-blogging";
 
 const postsGrid = document.querySelector("#postsGrid");
 const statusMessage = document.querySelector("#statusMessage");
@@ -26,6 +29,8 @@ const headerAvatar = document.querySelector("#headerAvatar");
 const dashboard = document.querySelector("#dashboard");
 const toggleDashboard = document.querySelector("#toggleDashboard");
 const openProfileFromDashboard = document.querySelector("#openProfileFromDashboard");
+const toggleTheme = document.querySelector("#toggleTheme");
+const openLogoutConfirm = document.querySelector("#openLogoutConfirm");
 const openCreatePost = document.querySelector("#openCreatePost");
 const createPostDialog = document.querySelector("#createPostDialog");
 const closeCreatePost = document.querySelector("#closeCreatePost");
@@ -46,8 +51,6 @@ const readPostBody = document.querySelector("#readPostBody");
 const authDialog = document.querySelector("#authDialog");
 const openAuth = document.querySelector("#openAuth");
 const closeAuth = document.querySelector("#closeAuth");
-const signinTab = document.querySelector("#signinTab");
-const registerTab = document.querySelector("#registerTab");
 const authTitle = document.querySelector("#authTitle");
 const authSubmit = document.querySelector("#authSubmit");
 const authMessage = document.querySelector("#authMessage");
@@ -57,8 +60,15 @@ const emailInput = document.querySelector("#emailInput");
 const passwordInput = document.querySelector("#passwordInput");
 const authSwitchText = document.querySelector("#authSwitchText");
 const authSwitchButton = document.querySelector("#authSwitchButton");
+const logoutDialog = document.querySelector("#logoutDialog");
+const cancelLogout = document.querySelector("#cancelLogout");
+const stayLoggedIn = document.querySelector("#stayLoggedIn");
+const confirmLogout = document.querySelector("#confirmLogout");
 const profileSetupDialog = document.querySelector("#profileSetupDialog");
+const closeProfileSetup = document.querySelector("#closeProfileSetup");
 const profileSetupForm = document.querySelector("#profileSetupForm");
+const profileSetupTitle = document.querySelector("#profileSetupTitle");
+const profileSubmitButton = document.querySelector("#profileSubmitButton");
 const firstNameInput = document.querySelector("#firstNameInput");
 const lastNameInput = document.querySelector("#lastNameInput");
 const bioInput = document.querySelector("#bioInput");
@@ -78,11 +88,21 @@ const profileViewCountry = document.querySelector("#profileViewCountry");
 const profileViewName = document.querySelector("#profileViewName");
 const profileViewBio = document.querySelector("#profileViewBio");
 const profileViewLinks = document.querySelector("#profileViewLinks");
+const editProfileButton = document.querySelector("#editProfileButton");
 
 let authMode = "signin";
 let isAuthenticated = false;
 let currentUser = null;
 let editingPostId = null;
+let isEditingProfile = false;
+
+const applyTheme = (theme) => {
+  const isDark = theme === "dark";
+  document.body.classList.toggle("dark-mode", isDark);
+  toggleTheme.textContent = isDark ? "Light mode" : "Dark mode";
+  toggleTheme.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+  localStorage.setItem("blogTheme", theme);
+};
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -152,6 +172,25 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getCurrentUserId = () => currentUser?._id || currentUser?.id;
 
+const shufflePosts = (posts) => {
+  const shuffled = [...posts];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled;
+};
+
+const isDefaultPostImage = (image = "") => {
+  return !image || image === DEFAULT_POST_IMAGE || image.includes(OLD_DEFAULT_POST_IMAGE);
+};
+
+const getPostImage = (image = "") => {
+  return isDefaultPostImage(image) ? DEFAULT_POST_IMAGE : image;
+};
+
 const getDetectedCountry = () => {
   const locale = navigator.language || "en-US";
   const region = locale.split("-")[1] || "US";
@@ -219,7 +258,8 @@ const openReadPostDialog = async (postId) => {
     const data = await request(`${API.post}/${postId}`);
     const post = data.result;
 
-    readPostImage.src = post.image || "";
+    readPostImage.src = getPostImage(post.image);
+    readPostImage.classList.toggle("default-post-image", isDefaultPostImage(post.image));
     readPostCategory.textContent = post.category || "Uncategorized";
     readPostDate.textContent = formatDate(post.createdAt);
     readPostTitle.textContent = post.title || "Untitled post";
@@ -291,9 +331,10 @@ const renderPosts = (posts) => {
     });
 
     const image = document.createElement("img");
-    image.src = post.image || "";
+    image.src = getPostImage(post.image);
     image.alt = "";
     image.loading = "lazy";
+    image.classList.toggle("default-post-image", isDefaultPostImage(post.image));
 
     const body = document.createElement("div");
     body.className = "post-body";
@@ -361,17 +402,19 @@ const renderPosts = (posts) => {
   postsGrid.appendChild(fragment);
 };
 
-const loadPosts = async (search = "") => {
+const loadPosts = async (search = "", options = {}) => {
   try {
     setStatus("Loading posts...");
     const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    const data = await request(`${API.posts}${query}`);
-    const posts = data.result || [];
+    const separator = query ? "&" : "?";
+    const cacheBuster = options.fresh ? `${separator}fresh=${Date.now()}` : "";
+    const data = await request(`${API.posts}${query}${cacheBuster}`);
+    const posts = options.shuffle ? shufflePosts(data.result || []) : data.result || [];
 
     if (search && posts.length === 0) {
       setStatus(`No posts matched "${search}". Redirecting to all posts.`, true);
       await wait(1600);
-      const allPostsData = await request(API.posts);
+      const allPostsData = await request(`${API.posts}?fresh=${Date.now()}`);
       searchInput.value = "";
       renderPosts(allPostsData.result || []);
       setStatus("");
@@ -396,8 +439,6 @@ const setAuthMode = (mode) => {
   const isRegister = mode === "register";
   authTitle.textContent = isRegister ? "Register" : "Sign in";
   authSubmit.textContent = isRegister ? "Create account" : "Sign in";
-  registerTab.classList.toggle("active", isRegister);
-  signinTab.classList.toggle("active", !isRegister);
   usernameLabel.classList.toggle("hidden", !isRegister);
   usernameInput.classList.toggle("hidden", !isRegister);
   usernameInput.required = isRegister;
@@ -409,6 +450,7 @@ const setAuthMode = (mode) => {
 const showAuthGate = (message = "") => {
   isAuthenticated = false;
   currentUser = null;
+  openProfile.classList.add("hidden");
   setAuthMode("register");
   document.body.classList.add("auth-locked");
   authMessage.textContent = message;
@@ -433,8 +475,27 @@ const unlockBlog = async (user) => {
   await loadPosts();
 };
 
-const showProfileSetup = (user) => {
+const checkSession = async () => {
+  try {
+    const data = await request(API.me);
+
+    if (!data.result.profileCompleted) {
+      showProfileSetup(data.result);
+      return;
+    }
+
+    await unlockBlog(data.result);
+  } catch (error) {
+    showAuthGate("");
+  }
+};
+
+const showProfileSetup = (user, options = {}) => {
+  isEditingProfile = Boolean(options.edit);
   currentUser = user;
+  profileSetupTitle.textContent = isEditingProfile ? "Edit your profile" : "Complete your profile";
+  profileSubmitButton.textContent = isEditingProfile ? "Save changes" : "Save profile";
+  closeProfileSetup.classList.toggle("hidden", !isEditingProfile);
   firstNameInput.value = user?.firstName || "";
   lastNameInput.value = user?.lastName || "";
   bioInput.value = user?.bio || "";
@@ -446,7 +507,9 @@ const showProfileSetup = (user) => {
   countryInput.value = user?.country || getDetectedCountry();
   profileCountryText.textContent = `Country: ${countryInput.value}`;
   profileSetupMessage.textContent = "";
-  authDialog.close();
+  if (authDialog.open) {
+    authDialog.close();
+  }
   profileSetupDialog.showModal();
 };
 
@@ -487,7 +550,7 @@ searchForm.addEventListener("submit", (event) => {
 refreshPosts.addEventListener("click", () => {
   if (!isAuthenticated) return;
   searchInput.value = "";
-  loadPosts().then(() => {
+  loadPosts("", { fresh: true, shuffle: true }).then(() => {
     postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
@@ -501,6 +564,37 @@ openProfile.addEventListener("click", openProfileDialog);
 openProfileFromDashboard.addEventListener("click", openProfileDialog);
 closeProfileView.addEventListener("click", () => {
   profileViewDialog.close();
+});
+
+editProfileButton.addEventListener("click", () => {
+  if (!currentUser) return;
+  profileViewDialog.close();
+  showProfileSetup(currentUser, { edit: true });
+});
+
+toggleTheme.addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
+});
+
+openLogoutConfirm.addEventListener("click", () => {
+  logoutDialog.showModal();
+});
+
+const closeLogoutDialog = () => logoutDialog.close();
+cancelLogout.addEventListener("click", closeLogoutDialog);
+stayLoggedIn.addEventListener("click", closeLogoutDialog);
+confirmLogout.addEventListener("click", async () => {
+  try {
+    await request(API.logout, { method: "POST" });
+  } catch (error) {
+    // Still clear the local UI state if the server cookie is already gone.
+  }
+
+  logoutDialog.close();
+  postsGrid.innerHTML = "";
+  postCount.textContent = "";
+  searchInput.value = "";
+  showAuthGate("You have been logged out.");
 });
 
 toggleDashboard.addEventListener("click", () => {
@@ -613,8 +707,13 @@ profileSetupDialog.addEventListener("cancel", (event) => {
   event.preventDefault();
 });
 
-signinTab.addEventListener("click", () => setAuthMode("signin"));
-registerTab.addEventListener("click", () => setAuthMode("register"));
+closeProfileSetup.addEventListener("click", () => {
+  if (!isEditingProfile) return;
+  isEditingProfile = false;
+  profileSetupDialog.close();
+  openProfileDialog();
+});
+
 authSwitchButton.addEventListener("click", () => {
   setAuthMode(authMode === "register" ? "signin" : "register");
 });
@@ -677,6 +776,15 @@ profileSetupForm.addEventListener("submit", async (event) => {
 
     profileSetupForm.reset();
     profileSetupDialog.close();
+
+    if (isEditingProfile) {
+      isEditingProfile = false;
+      currentUser = data.result;
+      syncHeaderProfile();
+      openProfileDialog();
+      return;
+    }
+
     await unlockBlog(data.result);
     postsSection.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
@@ -685,5 +793,6 @@ profileSetupForm.addEventListener("submit", async (event) => {
   }
 });
 
+applyTheme(localStorage.getItem("blogTheme") || "light");
 setAuthMode("register");
-showAuthGate("");
+checkSession();

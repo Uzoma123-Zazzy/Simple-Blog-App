@@ -41,8 +41,14 @@
         <button class="dashboard-link" id="openProfileFromDashboard" type="button">
           <span class="dashboard-text">Profile</span>
         </button>
+        <button class="dashboard-link danger-link" id="openLogoutConfirm" type="button">
+          <span class="dashboard-text">Logout</span>
+        </button>
+        
       </div>
     </aside>
+
+    <button class="theme-toggle" id="toggleTheme" type="button" aria-label="Switch to dark mode">Dark mode</button>
 
     <main>
       <section class="hero" aria-labelledby="pageTitle">
@@ -76,10 +82,6 @@
           <p class="eyebrow">Account</p>
           <h2 id="authTitle">Sign in</h2>
         </div>
-        <div class="tabs" role="tablist" aria-label="Authentication mode">
-          <button class="tab active" id="signinTab" type="button">Sign in</button>
-          <button class="tab" id="registerTab" type="button">Register</button>
-        </div>
         <div id="authMessage" class="status"></div>
         <label id="usernameLabel" class="hidden" for="usernameInput">Username</label>
         <input id="usernameInput" class="hidden" type="text" autocomplete="username" />
@@ -95,11 +97,27 @@
       </form>
     </dialog>
 
+    <dialog id="logoutDialog" class="auth-dialog">
+      <div class="dialog-shell">
+        <button class="icon-button close-dialog" id="cancelLogout" value="cancel" type="button" aria-label="Close">x</button>
+        <div class="panel-heading">
+          <p class="eyebrow">Logout</p>
+          <h2>Are you sure?</h2>
+        </div>
+        <p class="status">You will need to sign in again to continue.</p>
+        <div class="dialog-actions">
+          <button class="ghost-button" id="stayLoggedIn" type="button">Cancel</button>
+          <button class="primary-button danger-button" id="confirmLogout" type="button">Logout</button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="profileSetupDialog" class="profile-dialog">
       <div class="dialog-shell">
+        <button class="icon-button close-dialog" id="closeProfileSetup" value="cancel" type="button" aria-label="Close">x</button>
         <div class="panel-heading">
           <p class="eyebrow">Profile</p>
-          <h2>Complete your profile</h2>
+          <h2 id="profileSetupTitle">Complete your profile</h2>
         </div>
         <form id="profileSetupForm" class="stacked-form">
           <div class="form-grid">
@@ -147,7 +165,7 @@
           <input id="countryInput" name="country" type="hidden" />
           <p class="status" id="profileCountryText"></p>
           <div id="profileSetupMessage" class="status"></div>
-          <button class="primary-button wide" type="submit">Save profile</button>
+          <button class="primary-button wide" id="profileSubmitButton" type="submit">Save profile</button>
         </form>
       </div>
     </dialog>
@@ -161,6 +179,7 @@
           <h2 id="profileViewName"></h2>
           <p id="profileViewBio"></p>
           <div class="profile-links" id="profileViewLinks"></div>
+          <button class="primary-button" id="editProfileButton" type="button">Edit profile</button>
         </div>
       </article>
     </dialog>

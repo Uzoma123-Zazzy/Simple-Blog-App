@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose')  
 
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=900&q=80"
 
 const postSchema = new mongoose.Schema(
   {
@@ -27,7 +28,7 @@ const postSchema = new mongoose.Schema(
     // Blog image (optional)
     image: {
       type: String,
-      default: "https://img.freepik.com/premium-vector/illustration-vector-graphic-cartoon-character-blogging_516790-1495.jpg?semt=ais_hybrid&w=740", // Default placeholder image
+      default: DEFAULT_POST_IMAGE,
     },
 
     // Category selection

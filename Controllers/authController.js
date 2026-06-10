@@ -7,12 +7,54 @@ const { errorHandler } = require('../Utils/Error.js')
 
 dotenv.config()
 
-const generateToken = (user) => {
+const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+}
+
+const getUserData = (userDocument) => {
+  const { password: _, ...user } = userDocument._doc
+  return user
+}
+
+const generateAccessToken = (user) => {
   return jwt.sign(
     { id: user._id, isAdmin: user.isAdmin, username: user.username },
     process.env.JWT_SECRET_KEY,
-    { expiresIn: '1d' }
+    { expiresIn: '15m' }
   )
+}
+
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { id: user._id },
+    process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET_KEY,
+    { expiresIn: '7d' }
+  )
+}
+
+const setAuthCookies = (res, user) => {
+  res.cookie("accessToken", generateAccessToken(user), {
+    ...cookieOptions,
+    maxAge: ACCESS_TOKEN_MAX_AGE,
+  })
+
+  res.cookie("refreshToken", generateRefreshToken(user), {
+    ...cookieOptions,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+  })
+
+  res.clearCookie("token", cookieOptions)
+}
+
+const clearAuthCookies = (res) => {
+  res.clearCookie("accessToken", cookieOptions)
+  res.clearCookie("refreshToken", cookieOptions)
+  res.clearCookie("token", cookieOptions)
 }
 
 // SIGN UP
@@ -43,21 +85,12 @@ const registerUser = async (req, res, next) => {
 
     await newUser.save()
 
-    const token = generateToken(newUser)
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000
-    })
-
-    const { password: _, ...user } = newUser._doc
+    setAuthCookies(res, newUser)
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      result: user
+      result: getUserData(newUser)
     })
 
   } catch (err) {
@@ -87,21 +120,12 @@ const signinUser = async (req, res, next) => {
       return next(errorHandler(401, "Invalid credentials"))
     }
 
-    const token = generateToken(user)
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000
-    })
-
-    const { password: _, ...userData } = user._doc
+    setAuthCookies(res, user)
 
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
-      result: userData
+      result: getUserData(user)
     })
 
   } catch (err) {
@@ -137,21 +161,12 @@ const googleAuth = async (req, res, next) => {
       await userDetail.save()
     }
 
-    const token = generateToken(userDetail)
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000
-    })
-
-    const { password: _, ...user } = userDetail._doc
+    setAuthCookies(res, userDetail)
 
     res.status(200).json({
       success: true,
       message: "User authenticated successfully",
-      result: user
+      result: getUserData(userDetail)
     })
 
   } catch (error) {
@@ -159,4 +174,45 @@ const googleAuth = async (req, res, next) => {
   }
 }
 
-module.exports = { googleAuth, registerUser, signinUser }
+const refreshAccessToken = async (req, res, next) => {
+  try {
+    const token = req.cookies?.refreshToken
+
+    if (!token) {
+      return next(errorHandler(401, "Refresh token missing"))
+    }
+
+    const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET_KEY)
+    const user = await User.findById(payload.id)
+
+    if (!user) {
+      clearAuthCookies(res)
+      return next(errorHandler(404, "User not found"))
+    }
+
+    res.cookie("accessToken", generateAccessToken(user), {
+      ...cookieOptions,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
+    })
+
+    res.status(200).json({
+      success: true,
+      message: "Access token refreshed",
+      result: getUserData(user),
+    })
+
+  } catch (error) {
+    clearAuthCookies(res)
+    next(errorHandler(403, "Invalid or expired refresh token"))
+  }
+}
+
+const logoutUser = (req, res) => {
+  clearAuthCookies(res)
+  res.status(200).json({
+    success: true,
+    message: "User logged out successfully",
+  })
+}
+
+module.exports = { googleAuth, registerUser, signinUser, refreshAccessToken, logoutUser }
