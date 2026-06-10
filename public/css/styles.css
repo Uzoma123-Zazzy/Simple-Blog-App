@@ -202,7 +202,8 @@ body.dark-mode .danger-link {
 }
 
 .dashboard.is-collapsed .dashboard-toggle {
-  background: #fff;
+  background: var(--panel);
+  color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 8px;
   margin-left: 0.75rem;
@@ -407,7 +408,7 @@ textarea:focus {
 .ghost-button,
 .tab,
 .icon-button {
-  background: #fff;
+  background: var(--panel);
   border-color: var(--line);
   color: var(--ink);
 }
@@ -507,7 +508,7 @@ textarea:focus {
 .post-edit-button,
 .post-delete-button {
   align-items: center;
-  background: #fff;
+  background: var(--panel);
   border-radius: 7px;
   display: inline-flex;
   height: 34px;
@@ -710,7 +711,7 @@ textarea:focus {
 }
 
 .tab.active {
-  background: #fff;
+  background: var(--panel);
   border-color: var(--line);
   font-weight: 800;
 }
