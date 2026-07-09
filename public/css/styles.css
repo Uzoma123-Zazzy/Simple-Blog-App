@@ -245,20 +245,35 @@ body.dark-mode .danger-link {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 999px;
-  box-shadow: var(--shadow);
   color: var(--ink);
-  font-size: 0.82rem;
-  font-weight: 800;
-  min-height: 38px;
-  padding: 0 0.9rem;
-  position: fixed;
-  right: 7rem;
-  top: 1rem;
-  z-index: 12;
+  display: inline-flex;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  width: 42px;
 }
 
 .theme-toggle:hover {
   color: var(--accent-dark);
+}
+
+.theme-icon {
+  fill: none;
+  height: 20px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 20px;
+}
+
+.theme-icon-sun,
+body.dark-mode .theme-icon-moon {
+  display: none;
+}
+
+body.dark-mode .theme-icon-sun {
+  display: block;
 }
 
 .nav-actions,
@@ -808,7 +823,6 @@ textarea:focus {
     padding-right: 1rem;
   }
 
-  .nav-actions,
   .search-form {
     align-items: stretch;
     flex-direction: column;
